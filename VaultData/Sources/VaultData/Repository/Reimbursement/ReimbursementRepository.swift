@@ -6,6 +6,7 @@
 //
 
 import CoreData
+import VaultDomain
 
 public final class ReimbursementRepository: CoreDataRepository {
     let context: NSManagedObjectContext
@@ -41,7 +42,7 @@ public final class ReimbursementRepository: CoreDataRepository {
         category: Category
     ) throws -> Reimbursement {
         guard amount.compare(NSDecimalNumber.zero) == .orderedDescending else {
-            throw RepositoryError.invalidAmount
+            throw GeneralError.invalidAmount
         }
 
         let reimbursement = Reimbursement(context: context)
@@ -143,7 +144,7 @@ public final class ReimbursementRepository: CoreDataRepository {
     ) throws {
         if let newAmount {
             guard newAmount.compare(NSDecimalNumber.zero) == .orderedDescending else {
-                throw RepositoryError.invalidAmount
+                throw GeneralError.invalidAmount
             }
 
             reimbursement.amount = newAmount

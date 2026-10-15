@@ -6,6 +6,7 @@
 //
 
 import CoreData
+import VaultDomain
 
 public final class VaultRepository: CoreDataRepository {
     let context: NSManagedObjectContext
@@ -36,7 +37,7 @@ public final class VaultRepository: CoreDataRepository {
         currencyCode: String
     ) throws -> Vault {
         guard let currency = try currencyRepository.get(byCode: currencyCode) else {
-            throw RepositoryError.currencyNotFound(currencyCode)
+            throw CurrencyError.notFound(currencyCode)
         }
 
         let vault = Vault(context: context)
@@ -130,7 +131,7 @@ public final class VaultRepository: CoreDataRepository {
 
         if let currencyCode {
             guard let currency = try currencyRepository.get(byCode: currencyCode) else {
-                throw RepositoryError.currencyNotFound(currencyCode)
+                throw CurrencyError.notFound(currencyCode)
             }
             vault.currencyRelation = currency
         }

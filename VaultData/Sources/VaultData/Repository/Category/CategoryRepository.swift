@@ -6,16 +6,7 @@
 //
 
 import CoreData
-
-public enum ListOrdering {
-    case ascending, descending, type
-}
-
-public enum ArchiveFilter {
-    case any
-    case active
-    case archived
-}
+import VaultDomain
 
 public final class CategoryRepository: CoreDataRepository {
     let context: NSManagedObjectContext
@@ -55,7 +46,7 @@ public final class CategoryRepository: CoreDataRepository {
         vaultRequest.predicate = NSPredicate(format: "id == %@", vaultID as CVarArg)
 
         guard let vault = try fetchFirst(vaultRequest) else {
-            throw RepositoryError.vaultNotFound(vaultID)
+            throw VaultError.notFound(vaultID)
         }
 
         let category = Category(context: context)

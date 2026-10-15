@@ -7,29 +7,7 @@
 
 import Foundation
 import FoundationModels
-
-/// Represents the type of a financial operation.
-///
-/// This enum distinguishes between operations from `income` and `expense`
-
-public enum OperationType: Int16 {
-    case income = 0, expense = 1
-}
-
-public enum SplittingType: Int16 {
-    case none = 0, manual = 1, equal = 2
-}
-
-public enum BudgetRole: Int16 {
-    case unclassified = 0
-    case needs = 1
-    case wants = 2
-    case savings = 3
-}
-
-public enum ReimbursementStatus: Int16 {
-    case expected = 0, received = 1, cancelled = 2
-}
+import VaultDomain
 
 // MARK: - Computed Properties
 extension Operation {

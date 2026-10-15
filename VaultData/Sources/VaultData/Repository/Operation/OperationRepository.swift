@@ -6,6 +6,7 @@
 //
 
 import CoreData
+import VaultDomain
 
 public final class OperationRepository: CoreDataRepository {
     
@@ -144,7 +145,7 @@ public final class OperationRepository: CoreDataRepository {
     ///     - Fetch operation fails
     public func getAll(from vault: Vault, year: Int) throws -> [Operation] {
         guard (1...9999).contains(year) else {
-            throw RepositoryError.invalidYear(year)
+            throw GeneralError.invalidYear(year)
         }
 
         let calendar = Calendar.current
@@ -153,7 +154,7 @@ public final class OperationRepository: CoreDataRepository {
             let startOfYear = calendar.date(from: DateComponents(year: year, month: 1, day: 1)),
             let endOfYear = calendar.date(from: DateComponents(year: year + 1, month: 1, day: 1))
         else {
-            throw RepositoryError.invalidYear(year)
+            throw GeneralError.invalidYear(year)
         }
 
         let request: NSFetchRequest<Operation> = Operation.fetchRequest()
@@ -322,7 +323,7 @@ public final class OperationRepository: CoreDataRepository {
                 request.predicate = NSPredicate(format: "id == %@", categoryID as CVarArg)
 
                 guard let category = try fetchFirst(request) else {
-                    throw RepositoryError.categoryNotFound(categoryID)
+                    throw CategoryError.notFound(categoryID)
                 }
 
                 operation.category = category

@@ -6,10 +6,7 @@
 //
 
 import CoreData
-
-public enum SettingsRepositoryError: LocalizedError {
-    case settingsNotFound
-}
+import VaultDomain
 
 public final class SettingsRepository: CoreDataRepository {
     
@@ -44,7 +41,7 @@ extension SettingsRepository {
     public func setFavorite(vault: Vault) throws -> Settings {
         
         guard let settings = try get() else {
-            throw SettingsRepositoryError.settingsNotFound
+            throw SettingsError.notFound
         }
         
         settings.favoriteVault = vault
@@ -57,7 +54,7 @@ extension SettingsRepository {
     public func getFavorite() throws -> Vault? {
         
         guard let settings = try get() else {
-            throw SettingsRepositoryError.settingsNotFound
+            throw SettingsError.notFound
         }
         
         return settings.favoriteVault
@@ -69,7 +66,7 @@ extension SettingsRepository {
     public func setLastOpenedDate(date: Date) throws {
         
         guard let settings = try get() else {
-            throw SettingsRepositoryError.settingsNotFound
+            throw SettingsError.notFound
         }
         
         settings.lastOpened = date

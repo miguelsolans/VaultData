@@ -15,18 +15,24 @@ let package = Package(
             targets: ["VaultData"]
         ),
     ],
+    dependencies: [
+        .package(path: "../../VaultDomain/VaultDomain")
+    ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
             name: "VaultData",
+            dependencies: [
+                .product(
+                    name: "VaultDomain",
+                    package: "VaultDomain"
+                )
+            ],
             resources: [
                 .process("Model/VaultModel.xcdatamodeld"),
                 .process("Seed")
             ]
-            /*swiftSettings: [
-                .enableUpcomingFeature("ApproachableConcurrency"),
-            ],*/
         ),
     ],
     swiftLanguageModes: [.v5]

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import VaultDomain
 
 extension Category {
     /// The typed representation of the category’s raw `type` value.

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import VaultDomain
 
 public struct GroupedOperations {
     public let date: Date

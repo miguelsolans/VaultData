@@ -7,18 +7,6 @@
 
 import StoreKit
 
-public enum StoreKitError: LocalizedError {
-    case subscriptionRequired
-    
-    public var errorDescription: String? {
-        switch self {
-        case .subscriptionRequired:
-            return "Feature requires subscription"
-        }
-    }
-}
-
-
 public final class StoreKitRepository {
     
     private let productIDs: [String] = {

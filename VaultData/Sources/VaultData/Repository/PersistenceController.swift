@@ -9,32 +9,6 @@ import CoreData
 
 // MARK: - Repository Errors
 
-enum RepositoryError: LocalizedError {
-    case persistentStoreLoadFailed(Error)
-    case invalidYear(Int)
-    case vaultNotFound(UUID)
-    case categoryNotFound(UUID)
-    case currencyNotFound(String)
-    case invalidAmount
-    
-    var errorDescription: String? {
-        switch self {
-        case .persistentStoreLoadFailed(let error):
-            return "Failed to load persistent store: \(error.localizedDescription)"
-        case .invalidYear(let year):
-            return "Invalid year: \(year)"
-        case .vaultNotFound(let id):
-            return "Vault not found for id \(id.uuidString)"
-        case .categoryNotFound(let id):
-            return "Category not found for id \(id.uuidString)"
-        case .currencyNotFound(let code):
-            return "Currency not found for code \(code)"
-        case .invalidAmount:
-            return "Invalid amount"
-        }
-    }
-}
-
 // MARK: - Context Helpers
 
 extension NSManagedObjectContext {

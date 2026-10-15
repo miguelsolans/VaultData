@@ -6,13 +6,7 @@
 //
 
 import CoreData
-
-public enum RecurrenceType: Int16 {
-    case once = 0
-    case weekly = 1
-    case monthly = 2
-    case yearly = 3
-}
+import VaultDomain
 
 extension ScheduledOperation {
     

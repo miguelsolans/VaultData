@@ -5,6 +5,8 @@
 //  Created by Miguel Solans on 01/10/2026.
 //
 
+import VaultDomain
+
 // MARK: - Reimbursement
 extension Reimbursement {
     /// The typed representation of the reimbursement’s raw `type` value.

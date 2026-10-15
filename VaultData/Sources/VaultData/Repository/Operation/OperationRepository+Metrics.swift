@@ -6,6 +6,7 @@
 //
 
 import CoreData
+import VaultDomain
 
 public enum CategoryFilter {
     case any
@@ -541,7 +542,7 @@ extension OperationRepository {
 
         if let year {
             guard (1...9999).contains(year) else {
-                throw RepositoryError.invalidYear(year)
+                throw GeneralError.invalidYear(year)
             }
 
             let calendar = Calendar.current
@@ -550,7 +551,7 @@ extension OperationRepository {
                 let startOfYear = calendar.date(from: DateComponents(year: year, month: 1, day: 1)),
                 let endOfYear = calendar.date(from: DateComponents(year: year + 1, month: 1, day: 1))
             else {
-                throw RepositoryError.invalidYear(year)
+                throw GeneralError.invalidYear(year)
             }
 
             predicates.append(

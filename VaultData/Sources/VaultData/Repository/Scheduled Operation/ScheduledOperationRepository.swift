@@ -6,6 +6,7 @@
 //
 
 import CoreData
+import VaultDomain
 
 public final class ScheduledOperationRepository: CoreDataRepository {
     
