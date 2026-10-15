@@ -41,7 +41,7 @@ public final class CategoryRepository: CoreDataRepository {
     /// - Throws: An error if:
     ///    - The category creation or persistence process fails.
     @discardableResult
-    func create(
+    public func create(
         name: String,
         emoji: String? = nil,
         color: String,
@@ -72,7 +72,7 @@ public final class CategoryRepository: CoreDataRepository {
         return category
     }
     
-    func findOrCreate(
+    public func findOrCreate(
         named name: String,
         type: OperationType,
         in vault: Vault,
@@ -102,7 +102,7 @@ public final class CategoryRepository: CoreDataRepository {
     /// - Returns: True if condition is met, false otherwise.
     ///
     /// - Throws: An error if the fetch request fails to execute.
-    func hasAny() throws -> Bool {
+    public func hasAny() throws -> Bool {
         let request: NSFetchRequest<Category> = Category.fetchRequest()
         request.fetchLimit = 1
         return try count(request) > 0
@@ -120,7 +120,7 @@ public final class CategoryRepository: CoreDataRepository {
     /// - Returns: A list of `Vault`
     ///
     /// - Throws: An error if the fetch request fails to execute.
-    func getAll(
+    public func getAll(
         from vault: Vault,
         operationType: OperationType? = nil,
         name: String? = nil,
@@ -214,7 +214,7 @@ public final class CategoryRepository: CoreDataRepository {
     /// - Returns: the `Category` instance with the matching `id`, or `nil` if no such category exists.
     ///
     /// - Throws: An error if the fetch request fails to execute.
-    func get(
+    public func get(
         by id: UUID? = nil,
         name: String? = nil,
         type: OperationType? = nil,
@@ -285,7 +285,7 @@ public final class CategoryRepository: CoreDataRepository {
     ///     - `newVisibleInPlot`: A flag indicating whether the category should appear in plotting
     ///
     ///  - Throws: An error if update request fails to execute
-    func update(
+    public func update(
         _ category: Category,
         newName: String? = nil,
         newEmoji: String? = nil,
@@ -342,7 +342,7 @@ public final class CategoryRepository: CoreDataRepository {
     /// - Throws: An error if saving context fails
     ///
     /// - Important: After deletion, the provided `Category` instance should no longer be used, as it becomes invalid once removed from the context.
-    func delete(_ category: Category) throws {
+    public func delete(_ category: Category) throws {
         context.delete(category)
         try save()
     }
@@ -352,7 +352,7 @@ public final class CategoryRepository: CoreDataRepository {
     /// - Throws: An error if saving context fails
     ///
     /// - Important: After deletion, all information regarind any `Category` instance should no longer be used, as it becomes invalid once removed from the context.
-    func deleteAll(from vault: Vault) throws {
+    public func deleteAll(from vault: Vault) throws {
         let categories = try getAll(from: vault)
         categories.forEach(context.delete)
         try save()

@@ -9,7 +9,7 @@ import CoreData
 
 public final class ScheduledOperationRepository: CoreDataRepository {
     
-    let context: NSManagedObjectContext
+    public let context: NSManagedObjectContext
     
     init(context: NSManagedObjectContext) {
         self.context = context
@@ -21,7 +21,7 @@ public final class ScheduledOperationRepository: CoreDataRepository {
 extension ScheduledOperationRepository {
     
     @discardableResult
-    func add(
+    public func add(
         title: String,
         amount: Double,
         recurrence: RecurrenceType,
@@ -68,14 +68,14 @@ extension ScheduledOperationRepository {
     ///
     /// - Throws: An error if:
     ///     - Fetch operation fails
-    func get(by id: UUID) throws -> ScheduledOperation? {
+    public func get(by id: UUID) throws -> ScheduledOperation? {
         let request: NSFetchRequest<ScheduledOperation> = ScheduledOperation.fetchRequest()
         request.fetchLimit = 1
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
         return try fetchFirst(request)
     }
     
-    func getAll(from vault: Vault) throws -> [ScheduledOperation] {
+    public func getAll(from vault: Vault) throws -> [ScheduledOperation] {
         
         let request: NSFetchRequest<ScheduledOperation> = ScheduledOperation.fetchRequest()
         
@@ -92,7 +92,7 @@ extension ScheduledOperationRepository {
         return try fetchAll(request)
     }
 
-    func getDue(asOf date: Date) throws -> [ScheduledOperation] {
+    public func getDue(asOf date: Date) throws -> [ScheduledOperation] {
         let calendar = Calendar.current
         let startOfToday = calendar.startOfDay(for: date)
         guard let startOfTomorrow = calendar.date(byAdding: .day, value: 1, to: startOfToday) else {
@@ -112,7 +112,7 @@ extension ScheduledOperationRepository {
         return try fetchAll(request)
     }
     
-    func getAll(from vault: Vault, active: Bool) throws -> [ScheduledOperation] {
+    public func getAll(from vault: Vault, active: Bool) throws -> [ScheduledOperation] {
         
         let request: NSFetchRequest<ScheduledOperation> = ScheduledOperation.fetchRequest()
         
@@ -152,7 +152,7 @@ extension ScheduledOperationRepository {
 // MARK: - Delete
 extension ScheduledOperationRepository {
     
-    func delete(_ operation: ScheduledOperation) throws {
+    public func delete(_ operation: ScheduledOperation) throws {
         context.delete(operation)
         try save()
     }

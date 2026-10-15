@@ -8,7 +8,8 @@
 import CoreData
 
 public final class OperationRepository: CoreDataRepository {
-    let context: NSManagedObjectContext
+    
+    public let context: NSManagedObjectContext
 
     init(context: NSManagedObjectContext) {
         self.context = context
@@ -32,7 +33,7 @@ public final class OperationRepository: CoreDataRepository {
     /// - Throws: An error if:
     ///    - The operation creation or persistence process fails.
     @discardableResult
-    func add(
+    public func add(
         title: String,
         subtitle: String? = nil,
         date: Date,
@@ -69,7 +70,7 @@ public final class OperationRepository: CoreDataRepository {
     /// Check if exists any`Operation` matching a range of dates
     ///
     /// - Returns: True if condition is met, false otherwise.
-    func hasAny(in vault: Vault, between startDate: Date? = nil, and endDate: Date? = nil) throws -> Bool {
+    public func hasAny(in vault: Vault, between startDate: Date? = nil, and endDate: Date? = nil) throws -> Bool {
         let request: NSFetchRequest<Operation> = Operation.fetchRequest()
         
         var predicates: [NSPredicate] = []
@@ -116,7 +117,7 @@ public final class OperationRepository: CoreDataRepository {
     ///
     /// - Throws: An error if:
     ///    - Fetch operation fails
-    func getAll(from vault: Vault) throws -> [Operation] {
+    public func getAll(from vault: Vault) throws -> [Operation] {
         let request: NSFetchRequest<Operation> = Operation.fetchRequest()
         request.predicate = NSPredicate(
             format: "%K == %@",
@@ -141,7 +142,7 @@ public final class OperationRepository: CoreDataRepository {
     ///
     /// - Throws: An error if:
     ///     - Fetch operation fails
-    func getAll(from vault: Vault, year: Int) throws -> [Operation] {
+    public func getAll(from vault: Vault, year: Int) throws -> [Operation] {
         guard (1...9999).contains(year) else {
             throw RepositoryError.invalidYear(year)
         }
@@ -183,7 +184,7 @@ public final class OperationRepository: CoreDataRepository {
     ///
     /// - Throws: An error if:
     ///     - Fetch operation fails
-    func getAll(
+    public func getAll(
         from vault: Vault,
         between startDate: Date? = nil,
         and endDate: Date? = nil,
@@ -263,7 +264,7 @@ public final class OperationRepository: CoreDataRepository {
     ///
     /// - Throws: An error if:
     ///     - Fetch operation fails
-    func get(by id: UUID) throws -> Operation? {
+    public func get(by id: UUID) throws -> Operation? {
         let request: NSFetchRequest<Operation> = Operation.fetchRequest()
         request.fetchLimit = 1
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
@@ -285,7 +286,7 @@ public final class OperationRepository: CoreDataRepository {
     ///
     /// - Throws: An error if:
     ///     - Saving the updated operation fails.
-    func update(
+    public func update(
         _ operation: Operation,
         newTitle: String? = nil,
         newSubtitle: String?? = nil,
@@ -346,7 +347,7 @@ public final class OperationRepository: CoreDataRepository {
     /// - Throws: an error if saving context fails
     ///
     /// - Important: After deletion, the provided `Operation` instance should no longer be used, as it becomes invalid once removed from the context.
-    func delete(_ operation: Operation) throws {
+    public func delete(_ operation: Operation) throws {
         context.delete(operation)
         try save()
     }
@@ -356,7 +357,7 @@ public final class OperationRepository: CoreDataRepository {
     /// - Throws: an error if saving context fails
     ///
     /// - Important: After deletion, all information regarding any `Operation` in the specific `Vault` instance should no longer be used, as it becomes invalid once removed from the context.
-    func deleteAll(in vault: Vault) throws {
+    public func deleteAll(in vault: Vault) throws {
         let operations = try getAll(from: vault)
         operations.forEach(context.delete)
         try save()
@@ -364,7 +365,7 @@ public final class OperationRepository: CoreDataRepository {
 }
 
 extension OperationRepository {
-    func getOperationsMatching(
+    public func getOperationsMatching(
         title: String?,
         between minAmount: Double?,
         and maxAmount: Double?,
@@ -437,7 +438,7 @@ extension OperationRepository {
 
 extension OperationRepository {
     
-    func getScheduledOccurrence(
+    public func getScheduledOccurrence(
         for scheduledOperation: ScheduledOperation,
         on occurrenceDate: Date
     ) throws -> Operation? {

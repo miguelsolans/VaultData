@@ -17,7 +17,7 @@ public final class DashboardRepository: CoreDataRepository {
         self.context = context
     }
     
-    func create(for vault: Vault) throws -> Dashboard {
+    public func create(for vault: Vault) throws -> Dashboard {
         let dashboard = Dashboard(context: context)
         
         dashboard.id = UUID()
@@ -28,7 +28,7 @@ public final class DashboardRepository: CoreDataRepository {
         return dashboard
     }
     
-    func get(by id: UUID) throws -> Dashboard? {
+    public func get(by id: UUID) throws -> Dashboard? {
         let request: NSFetchRequest<Dashboard> = Dashboard.fetchRequest()
         request.fetchLimit = 1
         
@@ -40,7 +40,7 @@ public final class DashboardRepository: CoreDataRepository {
         return try fetchFirst(request)
     }
     
-    func get(for vault: Vault) throws -> Dashboard? {
+    public func get(for vault: Vault) throws -> Dashboard? {
         let request: NSFetchRequest<Dashboard> = Dashboard.fetchRequest()
         request.fetchLimit = 1
         

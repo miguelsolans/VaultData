@@ -30,7 +30,7 @@ public final class VaultRepository: CoreDataRepository {
     /// - Throws: An error if:
     ///    - The vault creation or persistence process fails.
     @discardableResult
-    func create(
+    public func create(
         with title: String,
         initialDeposit: Double,
         currencyCode: String
@@ -54,7 +54,7 @@ public final class VaultRepository: CoreDataRepository {
     /// Check if exists at least one `Vault` in memory
     ///
     /// - Returns: True if condition is met, false otherwise.
-    func hasAny() throws -> Bool {
+    public func hasAny() throws -> Bool {
         let request: NSFetchRequest<Vault> = Vault.fetchRequest()
         request.fetchLimit = 1
         return try count(request) > 0
@@ -63,7 +63,7 @@ public final class VaultRepository: CoreDataRepository {
     /// Retrieves a list of all `Vault` in memory
     ///
     /// - Returns: A list of `Vault`
-    func getAll() throws -> [Vault] {
+    public func getAll() throws -> [Vault] {
         let request: NSFetchRequest<Vault> = Vault.fetchRequest()
         request.sortDescriptors = [
             NSSortDescriptor(SortDescriptor(\Vault.title, order: .forward))
@@ -78,7 +78,7 @@ public final class VaultRepository: CoreDataRepository {
     /// - Returns: The `Vault` instance with the matching `id`, or `nil` if no such vault exists.
     ///
     /// - Throws: An error if the fetch request fails to execute.
-    func get(by id: UUID) throws -> Vault? {
+    public func get(by id: UUID) throws -> Vault? {
         let request: NSFetchRequest<Vault> = Vault.fetchRequest()
         request.fetchLimit = 1
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
@@ -92,7 +92,7 @@ public final class VaultRepository: CoreDataRepository {
     /// - Returns: The `Vault` instance with the matching `title`, or `nil` if no such vault exists.
     ///
     /// - Throws: An error if the fetch request fails to execute.
-    func get(by name: String) throws -> Vault? {
+    public func get(by name: String) throws -> Vault? {
         let request: NSFetchRequest<Vault> = Vault.fetchRequest()
         
         request.fetchLimit = 1
@@ -114,7 +114,7 @@ public final class VaultRepository: CoreDataRepository {
     /// - Throws: An error if:
     ///     - The provided `currencyCode` does not correspond to an existing currency.
     ///     - Saving the updated vault fails.
-    func update(
+    public func update(
         _ vault: Vault,
         newTitle: String? = nil,
         initialDeposit: Double? = nil,
@@ -138,13 +138,13 @@ public final class VaultRepository: CoreDataRepository {
         try save()
     }
     
-    func setMainIncome(_ vault: Vault, category: Category) throws {
+    public func setMainIncome(_ vault: Vault, category: Category) throws {
         vault.mainIncomeCategory = category
         
         try save()
     }
     
-    func clearMainIncome(_ vault: Vault) throws {
+    public func clearMainIncome(_ vault: Vault) throws {
         vault.mainIncomeCategory = nil
         
         try save()
@@ -159,7 +159,7 @@ public final class VaultRepository: CoreDataRepository {
     /// - Throws: an error if saving context fails
     ///
     /// - Important: After deletion, the provided `Vault` instance should no longer be used, as it becomes invalid once removed from the context.
-    func delete(_ vault: Vault) throws {
+    public func delete(_ vault: Vault) throws {
         context.delete(vault)
         try save()
     }
@@ -169,7 +169,7 @@ public final class VaultRepository: CoreDataRepository {
     /// - Throws: an error if saving context fails
     ///
     /// - Important: After deletion, all information regarding any `Vault` instance should no longer be used, as it becomes invalid once removed from the context.
-    func deleteAll() throws {
+    public func deleteAll() throws {
         let request: NSFetchRequest<Vault> = Vault.fetchRequest()
         let vaults = try context.fetch(request)
         vaults.forEach(context.delete)

@@ -25,7 +25,7 @@ public final class CurrencyRepository: CoreDataRepository {
     ///
     /// - Throws: An error if the fetch request fails to execute
     @discardableResult
-    func create(
+    public func create(
         code: String,
         name: String,
         symbol: String
@@ -47,7 +47,7 @@ public final class CurrencyRepository: CoreDataRepository {
     /// - Returns: True if condition is met, false otherwise.
     ///
     /// - Throws: An error if the fetch request fails to execute
-    func hasAny() throws -> Bool {
+    public func hasAny() throws -> Bool {
         let request: NSFetchRequest<Currency> = Currency.fetchRequest()
         request.fetchLimit = 1
         return try count(request) > 0
@@ -58,7 +58,7 @@ public final class CurrencyRepository: CoreDataRepository {
     /// - Returns: a list of `Currency`
     ///
     /// - Throws: An error if the fetch request fails to execute
-    func getAll() throws -> [Currency] {
+    public func getAll() throws -> [Currency] {
         let request: NSFetchRequest<Currency> = Currency.fetchRequest()
         request.sortDescriptors = [
             NSSortDescriptor(SortDescriptor(\Currency.code, order: .forward))
@@ -71,7 +71,7 @@ public final class CurrencyRepository: CoreDataRepository {
     /// - Returns: The `Currency` instance matching the `code`, or `nil` if no such currency exists.
     ///
     /// - Throws: An error if the fetch request fails to execute
-    func get(byCode code: String) throws -> Currency? {
+    public func get(byCode code: String) throws -> Currency? {
         let request: NSFetchRequest<Currency> = Currency.fetchRequest()
         request.fetchLimit = 1
         request.predicate = NSPredicate(
@@ -87,7 +87,7 @@ public final class CurrencyRepository: CoreDataRepository {
     /// - Returns: The `Currency` instance matching the `id`, or `nil` if no such currency exists.
     ///
     /// - Throws: An error if the fetch request fails to execute
-    func get(byID id: UUID) throws -> Currency? {
+    public func get(byID id: UUID) throws -> Currency? {
         let request: NSFetchRequest<Currency> = Currency.fetchRequest()
         request.fetchLimit = 1
         request.predicate = NSPredicate(

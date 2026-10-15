@@ -526,7 +526,7 @@ extension OperationRepository {
     /// - Throws:
     ///   - `RepositoryError.invalidYear(_:)` if the provided year is invalid.
     ///   - Any fetch-related error.
-    func getBiggestOperation(
+    public func getBiggestOperation(
         of type: OperationType,
         from vault: Vault,
         year: Int? = nil

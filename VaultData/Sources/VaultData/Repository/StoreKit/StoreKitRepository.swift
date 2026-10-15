@@ -37,7 +37,7 @@ public final class StoreKitRepository {
         return try await Product.products(for: productIDs)
     }
     
-    func purchase(_ product: Product) async throws -> Bool {
+    public func purchase(_ product: Product) async throws -> Bool {
         
         if await hasPremiumAccess() {
             return false

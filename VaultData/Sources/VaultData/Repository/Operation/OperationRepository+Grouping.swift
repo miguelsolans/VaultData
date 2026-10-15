@@ -7,14 +7,15 @@
 
 import Foundation
 
-struct GroupedOperations {
-    let date: Date
-    let items: [Operation]
+public struct GroupedOperations {
+    public let date: Date
+    
+    public let items: [Operation]
 }
 
 extension OperationRepository {
     
-    func getAllGroupedByDay(
+    public func getAllGroupedByDay(
         from vault: Vault,
         between startDate: Date? = nil,
         and endDate: Date? = nil,

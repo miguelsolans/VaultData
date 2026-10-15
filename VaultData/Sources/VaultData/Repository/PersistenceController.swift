@@ -82,7 +82,7 @@ struct PersistenceController {
     ///
     /// - Important: If the persistent store fails to load, the application will crash
     ///   using `fatalError`, as this is considered a non-recoverable setup failure.
-    init(
+    public init(
         configuration: PersistenceConfiguration,
         inMemory: Bool = false
     ) {
@@ -220,7 +220,7 @@ extension CoreDataRepository {
     /// Saves the current context if there are pending changes.
     ///
     /// - Throws: An error if the save operation fails.
-    func save() throws {
+    public func save() throws {
         try context.saveIfNeeded()
     }
     
@@ -231,7 +231,7 @@ extension CoreDataRepository {
     /// - Returns: The number of matching objects.
     ///
     /// - Throws: An error if the count operation fails.
-    func count<T: NSManagedObject>(_ request: NSFetchRequest<T>) throws -> Int {
+    public func count<T: NSManagedObject>(_ request: NSFetchRequest<T>) throws -> Int {
         try context.count(for: request)
     }
     
@@ -242,7 +242,7 @@ extension CoreDataRepository {
     /// - Returns: An array of matching objects.
     ///
     /// - Throws: An error if the fetch operation fails.
-    func fetchAll<T: NSManagedObject>(_ request: NSFetchRequest<T>) throws -> [T] {
+    public func fetchAll<T: NSManagedObject>(_ request: NSFetchRequest<T>) throws -> [T] {
         try context.fetch(request)
     }
     
@@ -255,7 +255,7 @@ extension CoreDataRepository {
     /// - Throws: An error if the fetch operation fails.
     ///
     /// - Note: This method sets `fetchLimit = 1` for performance optimization.
-    func fetchFirst<T: NSManagedObject>(_ request: NSFetchRequest<T>) throws -> T? {
+    public func fetchFirst<T: NSManagedObject>(_ request: NSFetchRequest<T>) throws -> T? {
         request.fetchLimit = 1
         return try context.fetch(request).first
     }

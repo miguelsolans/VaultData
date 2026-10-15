@@ -30,7 +30,7 @@ public final class ReimbursementRepository: CoreDataRepository {
     ///
     /// - Throws: An error if validation fails or persistence fails
     @discardableResult
-    func add(
+    public func add(
         amount: NSDecimalNumber,
         operation: Operation,
         sourceVault: Vault,
@@ -59,7 +59,7 @@ public final class ReimbursementRepository: CoreDataRepository {
         return reimbursement
     }
 
-    func linkIncomeOperation(_ incomeOperation: Operation, to reimbursement: Reimbursement) throws {
+    public func linkIncomeOperation(_ incomeOperation: Operation, to reimbursement: Reimbursement) throws {
         reimbursement.incomeOperation = incomeOperation
         try save()
     }
@@ -73,7 +73,7 @@ public final class ReimbursementRepository: CoreDataRepository {
     /// - Returns: The matching `Reimbursement`, or nil if not found
     ///
     /// - Throws: An error if fetch fails
-    func get(by id: UUID) throws -> Reimbursement? {
+    public func get(by id: UUID) throws -> Reimbursement? {
         let request: NSFetchRequest<Reimbursement> = Reimbursement.fetchRequest()
         request.fetchLimit = 1
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
@@ -87,7 +87,7 @@ public final class ReimbursementRepository: CoreDataRepository {
     /// - Returns: A list of reimbursements
     ///
     /// - Throws: An error if fetch fails
-    func getAll(for operation: Operation) throws -> [Reimbursement] {
+    public func getAll(for operation: Operation) throws -> [Reimbursement] {
         let request: NSFetchRequest<Reimbursement> = Reimbursement.fetchRequest()
         request.predicate = NSPredicate(
             format: "%K == %@",
@@ -109,7 +109,7 @@ public final class ReimbursementRepository: CoreDataRepository {
     /// - Returns: A list of reimbursements
     ///
     /// - Throws: An error if fetch fails
-    func getAll(depositedIn vault: Vault) throws -> [Reimbursement] {
+    public func getAll(depositedIn vault: Vault) throws -> [Reimbursement] {
         let request: NSFetchRequest<Reimbursement> = Reimbursement.fetchRequest()
         request.predicate = NSPredicate(
             format: "%K == %@",
@@ -132,7 +132,7 @@ public final class ReimbursementRepository: CoreDataRepository {
     ///   - newDate: Optional new date
     ///
     /// - Throws: An error if validation or persistence fails
-    func update(
+    public func update(
         _ reimbursement: Reimbursement,
         newAmount: NSDecimalNumber? = nil,
         newDestinationVault: Vault? = nil,
@@ -175,7 +175,7 @@ public final class ReimbursementRepository: CoreDataRepository {
     /// - Parameter reimbursement: The reimbursement to delete
     ///
     /// - Throws: An error if saving context fails
-    func delete(_ reimbursement: Reimbursement) throws {
+    public func delete(_ reimbursement: Reimbursement) throws {
         context.delete(reimbursement)
         try save()
     }
@@ -185,13 +185,13 @@ public final class ReimbursementRepository: CoreDataRepository {
     /// - Parameter operation: The parent operation
     ///
     /// - Throws: An error if saving context fails
-    func deleteAll(for operation: Operation) throws {
+    public func deleteAll(for operation: Operation) throws {
         let reimbursements = try getAll(for: operation)
         reimbursements.forEach(context.delete)
         try save()
     }
     
-    func deleteAll() throws {
+    public func deleteAll() throws {
         let request: NSFetchRequest<Reimbursement> = Reimbursement.fetchRequest()
         let reimbursements = try context.fetch(request)
         reimbursements.forEach(context.delete)
@@ -202,7 +202,7 @@ public final class ReimbursementRepository: CoreDataRepository {
 // MARK: - Metrics
 extension ReimbursementRepository {
     
-    func total(
+    public func total(
         in vault: Vault,
         with status: ReimbursementStatus,
         sameVault: Bool,
@@ -295,7 +295,7 @@ extension ReimbursementRepository {
         return total
     }
     
-    func total(for operation: Operation) throws -> Double? {
+    public func total(for operation: Operation) throws -> Double? {
         let request: NSFetchRequest<NSFetchRequestResult> = Reimbursement.fetchRequest()
         
         let expression = NSExpressionDescription()

@@ -11,9 +11,7 @@ public final class PersistenceDependencies {
     
     private let persistence: PersistenceController
     
-    private lazy var persistenceNotifications: PersistenceChangeNotifier = {
-        PersistenceChangeNotifier(persistenceContainer: persistence)
-    }()
+    public let persistenceNotifications: PersistenceChangeNotifier
     
     // MARK: - Repositories
     
@@ -35,8 +33,12 @@ public final class PersistenceDependencies {
     
     public let settingsRepository: SettingsRepository
     
+    public let storeKitRepository: StoreKitRepository
+    
     public init(configuration: PersistenceConfiguration) {
         self.persistence = PersistenceController(configuration: configuration)
+        
+        self.persistenceNotifications = PersistenceChangeNotifier(persistenceContainer: persistence)
         
         let context = persistence.viewContext
         
@@ -57,5 +59,7 @@ public final class PersistenceDependencies {
         self.scheduledOperationRepository = ScheduledOperationRepository(context: context)
         
         self.settingsRepository = SettingsRepository(context: context)
+        
+        self.storeKitRepository = StoreKitRepository()
     }
 }

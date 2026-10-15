@@ -17,7 +17,7 @@ public final class WidgetRepository: CoreDataRepository {
         self.context = context
     }
     
-    func get(
+    public func get(
         by id: UUID
     ) throws -> DashboardWidget? {
         
@@ -34,7 +34,7 @@ public final class WidgetRepository: CoreDataRepository {
         return try fetchFirst(request)
     }
     
-    func get(
+    public func get(
         from dashboard: Dashboard
     ) throws -> [DashboardWidget]? {
         
@@ -53,7 +53,7 @@ public final class WidgetRepository: CoreDataRepository {
         return try fetchAll(request)
     }
     
-    func create(
+    public func create(
         widgetType: DashboardWidgetType,
         isVisible: Bool,
         sortOrder: Int,
@@ -72,7 +72,7 @@ public final class WidgetRepository: CoreDataRepository {
         return widget
     }
     
-    func update(
+    public func update(
         _ widget: DashboardWidget,
         isVisible: Bool,
     ) throws {
@@ -82,7 +82,7 @@ public final class WidgetRepository: CoreDataRepository {
         try save()
     }
     
-    func createDefaultWidgets(for dashboard: Dashboard) throws {
+    public func createDefaultWidgets(for dashboard: Dashboard) throws {
         
         _ = try create(
             widgetType: .totalIncomeAndSpending,
