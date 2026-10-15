@@ -1,0 +1,15 @@
+[
+  { "localizationKey": "Groceries", "kind": "expense", "emoji": "🛒", "color": "#4CAF50", "visible": true, "main": false, "budgetRule": "needs"},
+  { "localizationKey": "Eating Out", "kind": "expense", "emoji": "🍔", "color": "#FF7043", "visible": true, "main": false, "budgetRule": "wants" },
+  { "localizationKey": "Transport", "kind": "expense", "emoji": "🚗", "color": "#1E88E5", "visible": true, "main": false, "budgetRule": "needs" },
+  { "localizationKey": "Fuel", "kind": "expense", "emoji": "⛽️", "color": "#FB8C00", "visible": true, "main": false, "budgetRule": "needs" },
+  { "localizationKey": "Rent", "kind": "expense", "emoji": "🏠", "color": "#8E24AA", "visible": true, "main": false, "budgetRule": "needs" },
+  { "localizationKey": "Utilities", "kind": "expense", "emoji": "💡", "color": "#FDD835", "visible": true, "main": false, "budgetRule": "needs" },
+  { "localizationKey": "Shopping", "kind": "expense", "emoji": "🛍️", "color": "#EC407A", "visible": true, "main": false, "budgetRule": "wants" },
+  { "localizationKey": "Health", "kind": "expense", "emoji": "💊", "color": "#E53935", "visible": true, "main": false, "budgetRule": "needs" },
+  { "localizationKey": "Entertainment", "kind": "expense", "emoji": "🎬", "color": "#5E35B1", "visible": true, "main": false, "budgetRule": "wants" },
+  { "localizationKey": "Travel", "kind": "expense", "emoji": "✈️", "color": "#00ACC1", "visible": true, "main": false, "budgetRule": "wants" },
+  { "localizationKey": "Subscriptions", "kind": "expense", "emoji": "📱", "color": "#3949AB", "visible": true, "main": false, "budgetRule": "wants" },
+  { "localizationKey": "Taxes", "kind": "expense", "emoji": "💸", "color": "#6D4C41", "visible": true, "main": false, "budgetRule": "needs" },
+  { "localizationKey": "Other", "kind": "expense", "emoji": "📦", "color": "#757575", "visible": true, "main": false, "budgetRule": "unclassified" }
+]

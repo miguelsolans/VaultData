@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="24901" systemVersion="25F80" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
+    <entity name="Category" representedClassName="Category" syncable="YES">
+        <attribute name="archived" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="budgetRole" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="color" optional="YES" attributeType="String" defaultValueString=""/>
+        <attribute name="emoji" optional="YES" attributeType="String" defaultValueString=""/>
+        <attribute name="hasMonthlyBudget" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="monthlyBudget" optional="YES" attributeType="Decimal" defaultValueString="0.0"/>
+        <attribute name="name" attributeType="String" defaultValueString=""/>
+        <attribute name="type" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="visibleInPlot" optional="YES" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
+        <relationship name="mainIncomeForVault" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Vault" inverseName="mainIncomeCategory" inverseEntity="Vault"/>
+        <relationship name="operations" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Operation" inverseName="category" inverseEntity="Operation"/>
+        <relationship name="reimbursements" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Reimbursement" inverseName="destinationCategory" inverseEntity="Reimbursement"/>
+        <relationship name="vault" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Vault" inverseName="categories" inverseEntity="Vault"/>
+    </entity>
+    <entity name="Currency" representedClassName="Currency" syncable="YES">
+        <attribute name="code" attributeType="String" defaultValueString=""/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="name" attributeType="String" defaultValueString=""/>
+        <attribute name="symbol" attributeType="String" defaultValueString=""/>
+        <relationship name="vaults" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Vault" inverseName="currencyRelation" inverseEntity="Vault"/>
+    </entity>
+    <entity name="Dashboard" representedClassName="Dashboard" syncable="YES">
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <relationship name="vault" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Vault" inverseName="dashboard" inverseEntity="Vault"/>
+        <relationship name="widgets" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DashboardWidget" inverseName="dashboard" inverseEntity="DashboardWidget"/>
+    </entity>
+    <entity name="DashboardWidget" representedClassName="DashboardWidget" syncable="YES">
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="isVisible" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="sortOrder" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="type" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="dashboard" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Dashboard" inverseName="widgets" inverseEntity="Dashboard"/>
+    </entity>
+    <entity name="Operation" representedClassName="Operation" syncable="YES">
+        <attribute name="amount" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="date" attributeType="Date" defaultDateTimeInterval="805684320" usesScalarValueType="NO"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="splitType" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="subtitle" optional="YES" attributeType="String"/>
+        <attribute name="title" optional="YES" attributeType="String"/>
+        <attribute name="type" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="category" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Category" inverseName="operations" inverseEntity="Category"/>
+        <relationship name="reimbursements" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Reimbursement" inverseName="originalOperation" inverseEntity="Reimbursement"/>
+        <relationship name="reimbursementSource" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Reimbursement" inverseName="incomeOperation" inverseEntity="Reimbursement"/>
+        <relationship name="vault" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Vault" inverseName="operations" inverseEntity="Vault"/>
+    </entity>
+    <entity name="Reimbursement" representedClassName="Reimbursement" syncable="YES">
+        <attribute name="amount" attributeType="Decimal" defaultValueString="0.0"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="notes" optional="YES" attributeType="String"/>
+        <attribute name="status" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="destinationCategory" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Category" inverseName="reimbursements" inverseEntity="Category"/>
+        <relationship name="destinationVault" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Vault" inverseName="destinationReimbursements" inverseEntity="Vault"/>
+        <relationship name="incomeOperation" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Operation" inverseName="reimbursementSource" inverseEntity="Operation"/>
+        <relationship name="originalOperation" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Operation" inverseName="reimbursements" inverseEntity="Operation"/>
+        <relationship name="sourceVault" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Vault" inverseName="sourceReimbursements" inverseEntity="Vault"/>
+    </entity>
+    <entity name="Settings" representedClassName="Settings" syncable="YES">
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <relationship name="favoriteVault" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Vault" inverseName="favoritedBySettings" inverseEntity="Vault"/>
+    </entity>
+    <entity name="Vault" representedClassName="Vault" syncable="YES">
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="initialDeposit" optional="YES" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="title" attributeType="String" defaultValueString=""/>
+        <relationship name="categories" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Category" inverseName="vault" inverseEntity="Category"/>
+        <relationship name="currencyRelation" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Currency" inverseName="vaults" inverseEntity="Currency"/>
+        <relationship name="dashboard" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="Dashboard" inverseName="vault" inverseEntity="Dashboard"/>
+        <relationship name="destinationReimbursements" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Reimbursement" inverseName="destinationVault" inverseEntity="Reimbursement"/>
+        <relationship name="favoritedBySettings" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Settings" inverseName="favoriteVault" inverseEntity="Settings"/>
+        <relationship name="mainIncomeCategory" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Category" inverseName="mainIncomeForVault" inverseEntity="Category"/>
+        <relationship name="operations" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Operation" inverseName="vault" inverseEntity="Operation"/>
+        <relationship name="sourceReimbursements" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Reimbursement" inverseName="sourceVault" inverseEntity="Reimbursement"/>
+    </entity>
+</model>
