@@ -1,6 +1,0 @@
-[
-  { "localizationKey": "Salary", "kind": "income", "emoji": "💼", "color": "#6CC05A", "visible": true, "main": true, "budgetRule": "needs" },
-  { "localizationKey": "Freelance Income", "kind": "income", "emoji": "🧑‍💻", "color": "#93D988", "visible": true, "main": false, "budgetRule": "wants" },
-  { "localizationKey": "Investments", "kind": "income", "emoji": "📈", "color": "#4DAA3D", "visible": true, "main": false, "budgetRule": "savings" },
-  { "localizationKey": "Gifts", "kind": "income", "emoji": "🎁", "color": "#245A1D", "visible": true, "main": false, "budgetRule": "wants" }
-]
