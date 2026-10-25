@@ -1,5 +1,5 @@
 //
-//  PersistenceDependencies.swift
+//  VaultDataDependencies.swift
 //  VaultData
 //
 //  Created by Miguel Solans on 15/10/2026.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-public final class PersistenceDependencies {
+public final class VaultDataDependencies {
     
     private let persistence: PersistenceController
     
