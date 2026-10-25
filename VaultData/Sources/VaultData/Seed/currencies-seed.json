@@ -1,5 +1,0 @@
-[
-	{ "code": "EUR", "name": "Euro", "symbol": "€" },
-    { "code": "USD", "name": "US Dolars", "symbol": "€"},
-    { "code": "GBP", "name": "British Pound", "symbol": "£"}
-]

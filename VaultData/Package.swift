@@ -30,8 +30,7 @@ let package = Package(
                 )
             ],
             resources: [
-                .process("Model/VaultModel.xcdatamodeld"),
-                .process("Seed")
+                .process("Model/VaultModel.xcdatamodeld")
             ]
         ),
     ],
