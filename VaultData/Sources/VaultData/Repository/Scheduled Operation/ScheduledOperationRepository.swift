@@ -147,7 +147,9 @@ extension ScheduledOperationRepository {
 
 // MARK: - Update
 extension ScheduledOperationRepository {
-    
+    public func saveChanges() throws {
+        try save()
+    }
 }
 
 // MARK: - Delete

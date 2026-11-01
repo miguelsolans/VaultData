@@ -75,11 +75,17 @@ public final class WidgetRepository: CoreDataRepository {
     
     public func update(
         _ widget: DashboardWidget,
-        isVisible: Bool,
+        order: Int? = nil,
+        isVisible: Bool? = nil
     ) throws {
-        
-        widget.isVisible = isVisible
-        
+        if let order {
+            widget.sortOrder = Int16(order)
+        }
+
+        if let isVisible {
+            widget.isVisible = isVisible
+        }
+
         try save()
     }
     
