@@ -7,8 +7,6 @@
 
 import CoreData
 
-// MARK: - Repository Errors
-
 // MARK: - Context Helpers
 
 extension NSManagedObjectContext {
