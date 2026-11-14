@@ -33,7 +33,7 @@ public final class CategoryRepository: CoreDataRepository {
     ///    - The category creation or persistence process fails.
     @discardableResult
     public func create(
-        name: String,
+        title: String,
         emoji: String? = nil,
         color: String,
         type: OperationType,
@@ -51,7 +51,7 @@ public final class CategoryRepository: CoreDataRepository {
 
         let category = Category(context: context)
         category.id = UUID()
-        category.name = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        category.title = title.trimmingCharacters(in: .whitespacesAndNewlines)
         category.emoji = emoji
         category.color = color
         category.vault = vault
@@ -64,21 +64,21 @@ public final class CategoryRepository: CoreDataRepository {
     }
     
     public func findOrCreate(
-        named name: String,
+        title: String,
         type: OperationType,
         in vault: Vault,
         color: String,
         visibleInPlot: Bool = true
     ) throws -> Category {
         
-        let normalizedName = name.trimmingCharacters(in: .whitespacesAndNewlines);
+        let normalizedName = title.trimmingCharacters(in: .whitespacesAndNewlines);
         
-        if let existingCategory = try get(name: normalizedName, type: type, in: vault) {
+        if let existingCategory = try get(title: normalizedName, type: type, in: vault) {
             return existingCategory
         }
         
         return try create(
-            name: name,
+            title: title,
             color: color,
             type: type,
             vaultID: vault.id!,
@@ -145,7 +145,7 @@ public final class CategoryRepository: CoreDataRepository {
             
             let predicate = NSPredicate(
                 format: "%K ==[c] %@",
-                #keyPath(Category.name),
+                #keyPath(Category.title),
                 normalizedName
             )
             
@@ -181,12 +181,12 @@ public final class CategoryRepository: CoreDataRepository {
         
         switch order {
         case .ascending:
-            sortDescriptors.append(.init(key: #keyPath(Category.name), ascending: true))
+            sortDescriptors.append(.init(key: #keyPath(Category.title), ascending: true))
         case .descending:
-            sortDescriptors.append(.init(key: #keyPath(Category.name), ascending: false))
+            sortDescriptors.append(.init(key: #keyPath(Category.title), ascending: false))
         case .type:
             sortDescriptors.append(.init(key: #keyPath(Category.type), ascending: true))
-            sortDescriptors.append(.init(key: #keyPath(Category.name), ascending: true))
+            sortDescriptors.append(.init(key: #keyPath(Category.title), ascending: true))
         }
         
         request.sortDescriptors = sortDescriptors
@@ -207,7 +207,7 @@ public final class CategoryRepository: CoreDataRepository {
     /// - Throws: An error if the fetch request fails to execute.
     public func get(
         by id: UUID? = nil,
-        name: String? = nil,
+        title: String? = nil,
         type: OperationType? = nil,
         in vault: Vault? = nil
     ) throws -> Category? {
@@ -236,12 +236,12 @@ public final class CategoryRepository: CoreDataRepository {
             predicates.append(predicate)
         }
         
-        if let name {
-            let normalizedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let title {
+            let normalizedName = title.trimmingCharacters(in: .whitespacesAndNewlines)
             
             let predicate = NSPredicate(
                 format: "%K ==[c] %@",
-                #keyPath(Category.name),
+                #keyPath(Category.title),
                 normalizedName
             )
             
@@ -278,18 +278,16 @@ public final class CategoryRepository: CoreDataRepository {
     ///  - Throws: An error if update request fails to execute
     public func update(
         _ category: Category,
-        newName: String? = nil,
+        newTitle: String? = nil,
         newEmoji: String? = nil,
         newColor: String? = nil,
         newType: OperationType? = nil,
         newVisibleInPlot: Bool? = nil,
-        newBudget: NSDecimalNumber? = nil,
-        newBudgetRole: BudgetRole? = nil,
         newArchived: Bool? = nil
     ) throws {
         
-        if let newName {
-            category.name = newName.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let newTitle {
+            category.title = newTitle.trimmingCharacters(in: .whitespacesAndNewlines)
         }
         
         if let newEmoji {
@@ -308,17 +306,9 @@ public final class CategoryRepository: CoreDataRepository {
             category.visibleInPlot = newVisibleInPlot
         }
         
-        if let newBudgetRole {
-            category.budgetRoleType = newBudgetRole
-        }
-        
         if let newArchived {
             category.archived = newArchived
         }
-        
-        category.hasMonthlyBudget = newBudget != nil
-        
-        category.monthlyBudget = newBudget
         
         try save()
     }

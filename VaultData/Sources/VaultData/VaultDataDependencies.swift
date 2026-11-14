@@ -21,8 +21,6 @@ public final class VaultDataDependencies {
     
     public let categoryRepository: CategoryRepository
     
-    public let currencyRepository: CurrencyRepository
-    
     public let reimbursementRepository: ReimbursementRepository
     
     public let dashboardRepository: DashboardRepository
@@ -47,8 +45,6 @@ public final class VaultDataDependencies {
         self.operationRepository = OperationRepository(context: context)
         
         self.categoryRepository = CategoryRepository(context: context)
-        
-        self.currencyRepository = CurrencyRepository(context: context)
         
         self.reimbursementRepository = ReimbursementRepository(context: context)
         
