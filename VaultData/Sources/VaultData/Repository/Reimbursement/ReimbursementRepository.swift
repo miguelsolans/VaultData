@@ -32,35 +32,35 @@ public final class ReimbursementRepository: CoreDataRepository {
     /// - Throws: An error if validation fails or persistence fails
     @discardableResult
     public func add(
-        amount: NSDecimalNumber,
+        amount: Decimal,
         operation: Operation,
         sourceVault: Vault,
         destinationVault: Vault,
         status: ReimbursementStatus,
         date: Date? = nil,
-        notes: String? = nil,
+        title: String? = nil,
         category: Category
     ) throws -> Reimbursement {
-        guard amount.compare(NSDecimalNumber.zero) == .orderedDescending else {
-            throw GeneralError.invalidAmount
-        }
 
         let reimbursement = Reimbursement(context: context)
 
         reimbursement.id = UUID()
-        reimbursement.amount = amount
+        reimbursement.amount = NSDecimalNumber(decimal: amount)
         reimbursement.originalOperation = operation
         reimbursement.sourceVault = sourceVault
         reimbursement.destinationVault = destinationVault
         reimbursement.status = status.rawValue
-        reimbursement.notes = notes
+        reimbursement.title = title
         reimbursement.destinationCategory = category
 
         try save()
         return reimbursement
     }
 
-    public func linkIncomeOperation(_ incomeOperation: Operation, to reimbursement: Reimbursement) throws {
+    public func linkIncomeOperation(
+        _ incomeOperation: Operation,
+        to reimbursement: Reimbursement
+    ) throws {
         reimbursement.incomeOperation = incomeOperation
         try save()
     }
@@ -74,7 +74,9 @@ public final class ReimbursementRepository: CoreDataRepository {
     /// - Returns: The matching `Reimbursement`, or nil if not found
     ///
     /// - Throws: An error if fetch fails
-    public func get(by id: UUID) throws -> Reimbursement? {
+    public func get(
+        by id: UUID
+    ) throws -> Reimbursement? {
         let request: NSFetchRequest<Reimbursement> = Reimbursement.fetchRequest()
         request.fetchLimit = 1
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
@@ -88,17 +90,16 @@ public final class ReimbursementRepository: CoreDataRepository {
     /// - Returns: A list of reimbursements
     ///
     /// - Throws: An error if fetch fails
-    public func getAll(for operation: Operation) throws -> [Reimbursement] {
+    public func getAll(
+        for operation: Operation
+    ) throws -> [Reimbursement] {
         let request: NSFetchRequest<Reimbursement> = Reimbursement.fetchRequest()
+        
         request.predicate = NSPredicate(
             format: "%K == %@",
             #keyPath(Reimbursement.originalOperation),
             operation
         )
-
-        /*request.sortDescriptors = [
-            NSSortDescriptor(key: #keyPath(Reimbursement.date), ascending: true)
-        ]*/
 
         return try fetchAll(request)
     }
@@ -112,6 +113,7 @@ public final class ReimbursementRepository: CoreDataRepository {
     /// - Throws: An error if fetch fails
     public func getAll(depositedIn vault: Vault) throws -> [Reimbursement] {
         let request: NSFetchRequest<Reimbursement> = Reimbursement.fetchRequest()
+        
         request.predicate = NSPredicate(
             format: "%K == %@",
             #keyPath(Reimbursement.destinationVault),
@@ -135,19 +137,16 @@ public final class ReimbursementRepository: CoreDataRepository {
     /// - Throws: An error if validation or persistence fails
     public func update(
         _ reimbursement: Reimbursement,
-        newAmount: NSDecimalNumber? = nil,
+        newAmount: Decimal? = nil,
         newDestinationVault: Vault? = nil,
         newStatus: ReimbursementStatus? = nil,
         newDate: Date?? = nil,
-        newNotes: String? = nil,
+        newTitle: String? = nil,
         newCategory: Category? = nil
     ) throws {
+        
         if let newAmount {
-            guard newAmount.compare(NSDecimalNumber.zero) == .orderedDescending else {
-                throw GeneralError.invalidAmount
-            }
-
-            reimbursement.amount = newAmount
+            reimbursement.amount = NSDecimalNumber(decimal: newAmount)
         }
 
         if let newDestinationVault {
@@ -158,8 +157,8 @@ public final class ReimbursementRepository: CoreDataRepository {
             reimbursement.status = newStatus.rawValue
         }
         
-        if let newNotes {
-            reimbursement.notes = newNotes
+        if let newTitle {
+            reimbursement.title = newTitle
         }
         
         if let newCategory {
@@ -209,7 +208,7 @@ extension ReimbursementRepository {
         sameVault: Bool,
         between startDate: Date? = nil,
         and endDate: Date? = nil
-    ) throws -> Double {
+    ) throws -> Decimal {
         let request: NSFetchRequest<NSFetchRequestResult> = Reimbursement.fetchRequest()
         
         let expression = NSExpressionDescription()
@@ -225,7 +224,7 @@ extension ReimbursementRepository {
             ]
         )
         
-        expression.expressionResultType = .doubleAttributeType
+        expression.expressionResultType = .decimalAttributeType
         
         var predicates: [NSPredicate] = []
         
@@ -291,12 +290,14 @@ extension ReimbursementRepository {
         
         let result = try context.fetch(request) as? [[String: Any]]
         
-        let total = result?.first?[ExpressionFunction.result.rawValue] as? Double ?? 0.0
+        let total = result?.first?[ExpressionFunction.result.rawValue] as? Decimal ?? .zero
         
         return total
     }
     
-    public func total(for operation: Operation) throws -> Double? {
+    public func total(
+        for operation: Operation
+    ) throws -> Decimal? {
         let request: NSFetchRequest<NSFetchRequestResult> = Reimbursement.fetchRequest()
         
         let expression = NSExpressionDescription()
@@ -312,7 +313,7 @@ extension ReimbursementRepository {
             ]
         )
         
-        expression.expressionResultType = .doubleAttributeType
+        expression.expressionResultType = .decimalAttributeType
         
         var predicates: [NSPredicate] = []
         
@@ -330,7 +331,7 @@ extension ReimbursementRepository {
         
         let result = try context.fetch(request) as? [[String: Any]]
         
-        let total = result?.first?[ExpressionFunction.result.rawValue] as? Double
+        let total = result?.first?[ExpressionFunction.result.rawValue] as? Decimal
         
         return total
     }

@@ -10,11 +10,9 @@ import VaultDomain
 
 public final class VaultRepository: CoreDataRepository {
     let context: NSManagedObjectContext
-    private let currencyRepository: CurrencyRepository
 
     init(context: NSManagedObjectContext) {
         self.context = context
-        self.currencyRepository = CurrencyRepository(context: context)
     }
     
     // MARK: - Create
@@ -24,7 +22,6 @@ public final class VaultRepository: CoreDataRepository {
     /// - Parameters
     ///   - `title`: the name chosen name for the Vault
     ///   - `initialDeposit`: starting balance of the Vault. Does not create operation for tracking history
-    ///   - `currencyCode`: the ISO 4217 currency code representing the Vault currency
     ///
     /// - Returns: The newly created `Vault` instance.
     ///
@@ -33,18 +30,13 @@ public final class VaultRepository: CoreDataRepository {
     @discardableResult
     public func create(
         with title: String,
-        initialDeposit: Double,
-        currencyCode: String
+        initialDeposit: Decimal
     ) throws -> Vault {
-        guard let currency = try currencyRepository.get(byCode: currencyCode) else {
-            throw CurrencyError.notFound(currencyCode)
-        }
 
         let vault = Vault(context: context)
         vault.id = UUID()
         vault.title = title
-        vault.initialDeposit = initialDeposit
-        vault.currencyRelation = currency
+        vault.initialAmountDecimal = NSDecimalNumber(decimal: initialDeposit)
 
         try save()
         return vault
@@ -52,13 +44,10 @@ public final class VaultRepository: CoreDataRepository {
     
     // MARK: - Read
     
-    /// Check if exists at least one `Vault` in memory
-    ///
-    /// - Returns: True if condition is met, false otherwise.
-    public func hasAny() throws -> Bool {
+    public func count() throws -> Int {
         let request: NSFetchRequest<Vault> = Vault.fetchRequest()
         request.fetchLimit = 1
-        return try count(request) > 0
+        return try count(request)
     }
     
     /// Retrieves a list of all `Vault` in memory
@@ -79,7 +68,9 @@ public final class VaultRepository: CoreDataRepository {
     /// - Returns: The `Vault` instance with the matching `id`, or `nil` if no such vault exists.
     ///
     /// - Throws: An error if the fetch request fails to execute.
-    public func get(by id: UUID) throws -> Vault? {
+    public func get(
+        by id: UUID
+    ) throws -> Vault? {
         let request: NSFetchRequest<Vault> = Vault.fetchRequest()
         request.fetchLimit = 1
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
@@ -93,7 +84,9 @@ public final class VaultRepository: CoreDataRepository {
     /// - Returns: The `Vault` instance with the matching `title`, or `nil` if no such vault exists.
     ///
     /// - Throws: An error if the fetch request fails to execute.
-    public func get(by name: String) throws -> Vault? {
+    public func get(
+        by name: String
+    ) throws -> Vault? {
         let request: NSFetchRequest<Vault> = Vault.fetchRequest()
         
         request.fetchLimit = 1
@@ -110,30 +103,20 @@ public final class VaultRepository: CoreDataRepository {
     ///     - `vault`: The `Vault` instance to update.
     ///     - `newTitle`: An optional new title for the vault.
     ///     - `initialDeposit`: An optional new initial deposit amount.
-    ///     - `currencyCode`: An optional ISO 4217 currency code
     ///
     /// - Throws: An error if:
-    ///     - The provided `currencyCode` does not correspond to an existing currency.
     ///     - Saving the updated vault fails.
     public func update(
         _ vault: Vault,
         newTitle: String? = nil,
-        initialDeposit: Double? = nil,
-        currencyCode: String? = nil
+        initialDeposit: Decimal? = nil,
     ) throws {
         if let newTitle {
             vault.title = newTitle
         }
 
         if let initialDeposit {
-            vault.initialDeposit = initialDeposit
-        }
-
-        if let currencyCode {
-            guard let currency = try currencyRepository.get(byCode: currencyCode) else {
-                throw CurrencyError.notFound(currencyCode)
-            }
-            vault.currencyRelation = currency
+            vault.initialAmountDecimal = NSDecimalNumber(decimal: initialDeposit)
         }
 
         try save()
@@ -160,7 +143,9 @@ public final class VaultRepository: CoreDataRepository {
     /// - Throws: an error if saving context fails
     ///
     /// - Important: After deletion, the provided `Vault` instance should no longer be used, as it becomes invalid once removed from the context.
-    public func delete(_ vault: Vault) throws {
+    public func delete(
+        _ vault: Vault
+    ) throws {
         context.delete(vault)
         try save()
     }

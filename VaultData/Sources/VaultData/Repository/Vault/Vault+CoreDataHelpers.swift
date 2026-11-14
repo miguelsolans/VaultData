@@ -25,15 +25,18 @@ extension Vault {
     ///
     /// - Note: If the vault has no operations and no received same-vault
     ///   reimbursements, the balance equals `initialDeposit`.
-    public var currentBalance: Double {
+    public var currentBalance: Decimal {
         let operations = (operations as? Set<Operation>) ?? []
         
-        let operationsBalance = operations.reduce(0.0) { result, operation in
+        let operationsBalance = operations.reduce(Decimal.zero) { result, operation in
+            let amount = operation.amountDecimal?.decimalValue ?? .zero
+            
             switch operation.operationType {
             case .income:
-                return result + operation.amount
+                return result + amount
+                
             case .expense:
-                return result - operation.amount
+                return result - amount
             }
         }
         
@@ -45,9 +48,11 @@ extension Vault {
                 reimbursement.sourceVault?.id == id &&
                 reimbursement.destinationVault?.id == id
             }
-            .reduce(0.0) { result, reimbursement in
-                result + (reimbursement.amount?.doubleValue ?? 0.0)
+            .reduce(Decimal.zero) { result, reimbursement in
+                result + (reimbursement.amount?.decimalValue ?? .zero)
             }
+        
+        let initialDeposit = initialAmountDecimal?.decimalValue ?? .zero
         
         return initialDeposit + operationsBalance + sameVaultReceivedReimbursements
     }

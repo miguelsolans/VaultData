@@ -36,10 +36,10 @@ public final class OperationRepository: CoreDataRepository {
     @discardableResult
     public func add(
         title: String,
-        subtitle: String? = nil,
+        notes: String? = nil,
         date: Date,
         type: OperationType,
-        amount: Double,
+        amount: Decimal,
         vault: Vault,
         category: Category,
         reimbursementSource: Reimbursement? = nil,
@@ -53,10 +53,10 @@ public final class OperationRepository: CoreDataRepository {
         operation.createdAt = now
         operation.updatedAt = now
         operation.title = title
-        operation.subtitle = subtitle
+        operation.notes = notes
         operation.date = date
         operation.operationType = type
-        operation.amount = amount
+        operation.amountDecimal = NSDecimalNumber(decimal: amount)
         operation.vault = vault
         operation.category = category
         operation.reimbursementSource = reimbursementSource
@@ -68,10 +68,11 @@ public final class OperationRepository: CoreDataRepository {
     
     // MARK: - Read
     
-    /// Check if exists any`Operation` matching a range of dates
-    ///
-    /// - Returns: True if condition is met, false otherwise.
-    public func hasAny(in vault: Vault, between startDate: Date? = nil, and endDate: Date? = nil) throws -> Bool {
+    public func count(
+        in vault: Vault,
+        between startDate: Date? = nil,
+        and endDate: Date? = nil
+    ) throws -> Int {
         let request: NSFetchRequest<Operation> = Operation.fetchRequest()
         
         var predicates: [NSPredicate] = []
@@ -107,7 +108,7 @@ public final class OperationRepository: CoreDataRepository {
         request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
         
         request.fetchLimit = 1
-        return try count(request) > 0
+        return try count(request)
     }
     
     /// Retrieves a list of all `Operation` in memory
@@ -118,7 +119,9 @@ public final class OperationRepository: CoreDataRepository {
     ///
     /// - Throws: An error if:
     ///    - Fetch operation fails
-    public func getAll(from vault: Vault) throws -> [Operation] {
+    public func getAll(
+        from vault: Vault
+    ) throws -> [Operation] {
         let request: NSFetchRequest<Operation> = Operation.fetchRequest()
         request.predicate = NSPredicate(
             format: "%K == %@",
@@ -143,11 +146,11 @@ public final class OperationRepository: CoreDataRepository {
     ///
     /// - Throws: An error if:
     ///     - Fetch operation fails
-    public func getAll(from vault: Vault, year: Int) throws -> [Operation] {
-        guard (1...9999).contains(year) else {
-            throw GeneralError.invalidYear(year)
-        }
-
+    public func getAll(
+        from vault: Vault,
+        year: Int
+    ) throws -> [Operation] {
+        
         let calendar = Calendar.current
 
         guard
@@ -265,7 +268,9 @@ public final class OperationRepository: CoreDataRepository {
     ///
     /// - Throws: An error if:
     ///     - Fetch operation fails
-    public func get(by id: UUID) throws -> Operation? {
+    public func get(
+        by id: UUID
+    ) throws -> Operation? {
         let request: NSFetchRequest<Operation> = Operation.fetchRequest()
         request.fetchLimit = 1
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
@@ -290,18 +295,18 @@ public final class OperationRepository: CoreDataRepository {
     public func update(
         _ operation: Operation,
         newTitle: String? = nil,
-        newSubtitle: String?? = nil,
+        newNotes: String?? = nil,
         newDate: Date?? = nil,
         newType: OperationType? = nil,
-        newAmount: Double? = nil,
+        newAmount: Decimal? = nil,
         newCategoryID: UUID?? = nil
     ) throws {
         if let newTitle {
             operation.title = newTitle
         }
 
-        if let newSubtitle {
-            operation.subtitle = newSubtitle
+        if let newNotes {
+            operation.notes = newNotes
         }
 
         if let newDate {
@@ -313,7 +318,7 @@ public final class OperationRepository: CoreDataRepository {
         }
 
         if let newAmount {
-            operation.amount = newAmount
+            operation.amountDecimal = NSDecimalNumber(decimal: newAmount)
         }
 
         if let newCategoryID {
@@ -368,8 +373,8 @@ public final class OperationRepository: CoreDataRepository {
 extension OperationRepository {
     public func getOperationsMatching(
         title: String?,
-        between minAmount: Double?,
-        and maxAmount: Double?,
+        between minAmount: NSDecimalNumber?,
+        and maxAmount: NSDecimalNumber?,
         with categoryNames: [String]?,
         of type: OperationType?, in
         vault: [String]?
@@ -392,7 +397,7 @@ extension OperationRepository {
         if let minAmount {
             let predicate = NSPredicate(
                 format: "%K >= %@",
-                #keyPath(Operation.amount),
+                #keyPath(Operation.amountDecimal),
                 minAmount
             )
             
@@ -402,7 +407,7 @@ extension OperationRepository {
         if let maxAmount {
             let predicate = NSPredicate(
                 format: "%K >= %@",
-                #keyPath(Operation.amount),
+                #keyPath(Operation.amountDecimal),
                 maxAmount
             )
             

@@ -122,34 +122,7 @@ struct PersistenceController {
         container.viewContext.mergePolicy = NSMergePolicy(merge: .mergeByPropertyObjectTrumpMergePolicyType)
         container.viewContext.undoManager = nil
         
-        backfillOperationTimestamps()
-    }
-    
-    /// Runs on every launch so operations synced from older app versions are also covered.
-    private func backfillOperationTimestamps() {
-        let context = newBackgroundContext()
-        
-        context.perform {
-            let request: NSFetchRequest<Operation> = Operation.fetchRequest()
-            request.predicate = NSPredicate(format: "%K == nil", #keyPath(Operation.createdAt))
-            request.fetchBatchSize = 200
-            
-            do {
-                let operations = try context.fetch(request)
-                guard !operations.isEmpty else { return }
-                
-                let now = Date()
-                
-                for operation in operations {
-                    operation.createdAt = operation.date ?? now
-                    operation.updatedAt = operation.updatedAt ?? now
-                }
-                
-                try context.save()
-            } catch {
-                print("PersistenceController | Backfill | Failed: \(error)")
-            }
-        }
+        migrateLegacyData()
     }
     
     /// The main view context associated with the container.
@@ -177,6 +150,204 @@ struct PersistenceController {
     /// - Throws: An error if the save operation fails.
     func saveViewContext() throws {
         try viewContext.saveIfNeeded()
+    }
+}
+
+extension PersistenceController {
+    
+    private func migrateLegacyData() {
+        backfillOperationTimestamps()
+        migrateCategoryName()
+        migrateOperationAmount()
+        migrateOperationSubtitle()
+        migrateReimbursementNotes()
+        migrateScheduledOperationAmount()
+        migrateVaultInitialDeposit()
+    }
+    
+    /// Runs on every launch so operations synced from older app versions are also covered.
+    private func backfillOperationTimestamps() {
+        let context = newBackgroundContext()
+        
+        context.perform {
+            let request: NSFetchRequest<Operation> = Operation.fetchRequest()
+            request.predicate = NSPredicate(format: "%K == nil", #keyPath(Operation.createdAt))
+            request.fetchBatchSize = 200
+            
+            do {
+                let operations = try context.fetch(request)
+                guard !operations.isEmpty else { return }
+                
+                let now = Date()
+                
+                for operation in operations {
+                    operation.createdAt = operation.date ?? now
+                    operation.updatedAt = operation.updatedAt ?? now
+                }
+                
+                try context.save()
+            } catch {
+                print("PersistenceController | Migration | Failed: \(error)")
+            }
+        }
+    }
+    
+    private func decimalNumber(from value: Double) -> NSDecimalNumber? {
+        guard value.isFinite else {
+            return nil
+        }
+
+        return NSDecimalNumber(string: String(value))
+    }
+    
+    private func migrateCategoryName() {
+        let context = newBackgroundContext()
+        
+        context.perform {
+            let request: NSFetchRequest<Category> = Category.fetchRequest()
+            request.fetchBatchSize = 200
+            
+            do {
+                
+                let categories = try context.fetch(request)
+                
+                guard !categories.isEmpty else { return }
+                
+                for category in categories {
+                    category.title = category.name
+                }
+                
+                try context.save()
+                
+            } catch {
+                print("PersistenceController | Migration | Failed: \(error)")
+            }
+        }
+    }
+    
+    private func migrateOperationAmount() {
+        let context = newBackgroundContext()
+        
+        context.perform {
+            let request: NSFetchRequest<Operation> = Operation.fetchRequest()
+            request.fetchBatchSize = 200
+            
+            do {
+                
+                let operations = try context.fetch(request)
+                
+                guard !operations.isEmpty else { return }
+                
+                for operation in operations {
+                    operation.amountDecimal = decimalNumber(from: operation.amount)
+                }
+                
+                try context.save()
+                
+            } catch {
+                print("PersistenceController | Migration | Failed: \(error)")
+            }
+        }
+    }
+    
+    private func migrateOperationSubtitle() {
+        let context = newBackgroundContext()
+        
+        context.perform {
+            let request: NSFetchRequest<Operation> = Operation.fetchRequest()
+            request.fetchBatchSize = 200
+            
+            do {
+                
+                let operations = try context.fetch(request)
+                
+                guard !operations.isEmpty else { return }
+                
+                for operation in operations {
+                    operation.notes = operation.subtitle
+                }
+                
+                try context.save()
+                
+            } catch {
+                print("PersistenceController | Migration | Failed: \(error)")
+            }
+        }
+    }
+    
+    private func migrateReimbursementNotes() {
+        let context = newBackgroundContext()
+        
+        context.perform {
+            let request: NSFetchRequest<Reimbursement> = Reimbursement.fetchRequest()
+            request.fetchBatchSize = 200
+            
+            do {
+                
+                let reimbursements = try context.fetch(request)
+                
+                guard !reimbursements.isEmpty else { return }
+                
+                for reimbursement in reimbursements {
+                    reimbursement.title = reimbursement.notes
+                }
+                
+                try context.save()
+                
+            } catch {
+                print("PersistenceController | Migration | Failed: \(error)")
+            }
+        }
+    }
+    
+    private func migrateScheduledOperationAmount() {
+        let context = newBackgroundContext()
+        
+        context.perform {
+            let request: NSFetchRequest<ScheduledOperation> = ScheduledOperation.fetchRequest()
+            request.fetchBatchSize = 200
+            
+            do {
+                
+                let operations = try context.fetch(request)
+                
+                guard !operations.isEmpty else { return }
+                
+                for operation in operations {
+                    operation.amountDecimal = decimalNumber(from: operation.amount)
+                }
+                
+                try context.save()
+                
+            } catch {
+                print("PersistenceController | Migration | Failed: \(error)")
+            }
+        }
+    }
+    
+    private func migrateVaultInitialDeposit() {
+        let context = newBackgroundContext()
+        
+        context.perform {
+            let request: NSFetchRequest<Vault> = Vault.fetchRequest()
+            request.fetchBatchSize = 200
+            
+            do {
+                
+                let vaults = try context.fetch(request)
+                
+                guard !vaults.isEmpty else { return }
+                
+                for vault in vaults {
+                    vault.initialAmountDecimal = decimalNumber(from: vault.initialDeposit)
+                }
+                
+                try context.save()
+                
+            } catch {
+                print("PersistenceController | Migration | Failed: \(error)")
+            }
+        }
     }
 }
 

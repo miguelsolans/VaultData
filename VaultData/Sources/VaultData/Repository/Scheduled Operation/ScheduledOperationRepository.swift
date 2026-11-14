@@ -24,7 +24,7 @@ extension ScheduledOperationRepository {
     @discardableResult
     public func add(
         title: String,
-        amount: Double,
+        amount: Decimal,
         recurrence: RecurrenceType,
         startDate: Date,
         endDate: Date? = nil,
@@ -39,7 +39,7 @@ extension ScheduledOperationRepository {
         
         operation.id = UUID()
         operation.title = title
-        operation.amount = amount
+        operation.amountDecimal = NSDecimalNumber(decimal: amount)
         operation.recurrenceType = recurrence
         operation.createdAt = now
         operation.updatedAt = now
@@ -69,14 +69,18 @@ extension ScheduledOperationRepository {
     ///
     /// - Throws: An error if:
     ///     - Fetch operation fails
-    public func get(by id: UUID) throws -> ScheduledOperation? {
+    public func get(
+        by id: UUID
+    ) throws -> ScheduledOperation? {
         let request: NSFetchRequest<ScheduledOperation> = ScheduledOperation.fetchRequest()
         request.fetchLimit = 1
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
         return try fetchFirst(request)
     }
     
-    public func getAll(from vault: Vault) throws -> [ScheduledOperation] {
+    public func getAll(
+        from vault: Vault
+    ) throws -> [ScheduledOperation] {
         
         let request: NSFetchRequest<ScheduledOperation> = ScheduledOperation.fetchRequest()
         
@@ -93,7 +97,9 @@ extension ScheduledOperationRepository {
         return try fetchAll(request)
     }
 
-    public func getDue(asOf date: Date) throws -> [ScheduledOperation] {
+    public func getDue(
+        asOf date: Date
+    ) throws -> [ScheduledOperation] {
         let calendar = Calendar.current
         let startOfToday = calendar.startOfDay(for: date)
         guard let startOfTomorrow = calendar.date(byAdding: .day, value: 1, to: startOfToday) else {
@@ -113,7 +119,10 @@ extension ScheduledOperationRepository {
         return try fetchAll(request)
     }
     
-    public func getAll(from vault: Vault, active: Bool) throws -> [ScheduledOperation] {
+    public func getAll(
+        from vault: Vault,
+        active: Bool
+    ) throws -> [ScheduledOperation] {
         
         let request: NSFetchRequest<ScheduledOperation> = ScheduledOperation.fetchRequest()
         

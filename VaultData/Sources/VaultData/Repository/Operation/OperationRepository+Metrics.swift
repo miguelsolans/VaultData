@@ -28,8 +28,8 @@ extension OperationRepository {
         and endDate: Date? = nil,
         of type: OperationType,
         category categoryFilter: CategoryFilter = .any
-    ) throws -> Double {
-        
+    ) throws -> Decimal {
+
         let request: NSFetchRequest<NSFetchRequestResult> = Operation.fetchRequest()
         
         let expression = NSExpressionDescription()
@@ -37,11 +37,11 @@ extension OperationRepository {
         expression.expression = NSExpression(
             forFunction: ExpressionFunction.sum.rawValue,
             arguments: [
-                NSExpression(forKeyPath: #keyPath(Operation.amount))
+                NSExpression(forKeyPath: #keyPath(Operation.amountDecimal))
             ]
         )
-        expression.expressionResultType = .doubleAttributeType
-        
+        expression.expressionResultType = .decimalAttributeType
+
         var predicates: [NSPredicate] = []
         
         // Always required
@@ -88,25 +88,35 @@ extension OperationRepository {
 
         case .matching(let category):
             predicates.append(
-                NSPredicate(format: "%K == %@", #keyPath(Operation.category), category)
+                NSPredicate(
+                    format: "%K == %@",
+                    #keyPath(Operation.category),
+                    category
+                )
             )
 
         case .excluding(let category):
             predicates.append(
-                NSPredicate(format: "%K != %@", #keyPath(Operation.category), category)
+                NSPredicate(
+                    format: "%K != %@",
+                    #keyPath(Operation.category),
+                    category
+                )
             )
         }
-        
-        request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
-        
+
+        request.predicate = NSCompoundPredicate(
+            andPredicateWithSubpredicates: predicates
+        )
+
         request.propertiesToFetch = [expression]
         request.resultType = .dictionaryResultType
         
         let result = try context.fetch(request) as? [[String: Any]]
-        
-        let total = result?.first?[ExpressionFunction.result.rawValue] as? Double ?? 0.0
-        
-        return total
+
+        let total = (result?.first?[ExpressionFunction.result.rawValue] as? NSDecimalNumber) ?? .zero
+
+        return total.decimalValue
     }
     
     public func averageAmount(
@@ -114,7 +124,7 @@ extension OperationRepository {
         between startDate: Date? = nil,
         and endDate: Date? = nil,
         of type: OperationType
-    ) throws -> Double {
+    ) throws -> Decimal {
         
         let request: NSFetchRequest<NSFetchRequestResult> = Operation.fetchRequest()
         
@@ -125,11 +135,11 @@ extension OperationRepository {
         expression.expression = NSExpression(
             forFunction: ExpressionFunction.average.rawValue,
             arguments: [
-                NSExpression(forKeyPath: #keyPath(Operation.amount))
+                NSExpression(forKeyPath: #keyPath(Operation.amountDecimal))
             ]
         )
         
-        expression.expressionResultType = .doubleAttributeType
+        expression.expressionResultType = .decimalAttributeType
         
         var predicates: [NSPredicate] = []
         
@@ -178,12 +188,18 @@ extension OperationRepository {
         
         let result = try context.fetch(request) as? [[String: Any]]
         
-        let total = result?.first?[ExpressionFunction.result.rawValue] as? Double ?? 0.0
+        let total = result?.first?[ExpressionFunction.result.rawValue] as? NSDecimalNumber ?? .zero
         
-        return total
+        return total.decimalValue
     }
     
-    public func totalAmountHidden(in vault: Vault, between startDate: Date, and endDate: Date, of type: OperationType) throws -> Double {
+    public func totalAmountHidden(
+        in vault: Vault,
+        between startDate: Date,
+        and endDate: Date,
+        of type: OperationType
+    ) throws -> Decimal {
+        
         let request: NSFetchRequest<NSFetchRequestResult> = Operation.fetchRequest()
         
         let expression = NSExpressionDescription()
@@ -193,11 +209,11 @@ extension OperationRepository {
         expression.expression = NSExpression(
             forFunction: ExpressionFunction.sum.rawValue,
             arguments: [
-                NSExpression(forKeyPath: #keyPath(Operation.amount))
+                NSExpression(forKeyPath: #keyPath(Operation.amountDecimal))
             ]
         )
         
-        expression.expressionResultType = .doubleAttributeType
+        expression.expressionResultType = .decimalAttributeType
         
         request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
             NSPredicate(
@@ -230,29 +246,31 @@ extension OperationRepository {
         
         let result = try context.fetch(request) as? [[String: Any]]
         
-        let total = result?.first?[ExpressionFunction.result.rawValue] as? Double ?? 0.0
+        let total = result?.first?[ExpressionFunction.result.rawValue] as? NSDecimalNumber ?? .zero
         
-        return total
+        return total.decimalValue
     }
     
-    public func totalReimbursed(in vault: Vault, withStatus status: ReimbursementStatus, sameDestinationVault: Bool) throws -> Double {
+    public func totalReimbursed(
+        in vault: Vault,
+        withStatus status: ReimbursementStatus,
+        sameDestinationVault: Bool
+    ) throws -> Decimal {
+
         let request: NSFetchRequest<NSFetchRequestResult> = Reimbursement.fetchRequest()
-        
+
         let expression = NSExpressionDescription()
-        
         expression.name = ExpressionFunction.result.rawValue
-        
         expression.expression = NSExpression(
             forFunction: ExpressionFunction.sum.rawValue,
             arguments: [
                 NSExpression(forKeyPath: #keyPath(Reimbursement.amount))
             ]
         )
-        
-        expression.expressionResultType = .doubleAttributeType
-        
+        expression.expressionResultType = .decimalAttributeType
+
         var predicates: [NSPredicate] = []
-        
+
         predicates.append(
             NSPredicate(
                 format: "%K == %@",
@@ -260,7 +278,7 @@ extension OperationRepository {
                 vault
             )
         )
-        
+
         if sameDestinationVault {
             predicates.append(
                 NSPredicate(
@@ -270,7 +288,7 @@ extension OperationRepository {
                 )
             )
         }
-        
+
         predicates.append(
             NSPredicate(
                 format: "%K == %d",
@@ -278,17 +296,19 @@ extension OperationRepository {
                 Int(status.rawValue)
             )
         )
-        
-        request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: predicates);
-        
+
+        request.predicate = NSCompoundPredicate(
+            andPredicateWithSubpredicates: predicates
+        )
+
         request.propertiesToFetch = [expression]
         request.resultType = .dictionaryResultType
-        
+
         let result = try context.fetch(request) as? [[String: Any]]
-        
-        let total = result?.first?[ExpressionFunction.result.rawValue] as? Double ?? 0.0
-        
-        return total
+
+        let total = result?.first?[ExpressionFunction.result.rawValue] as? NSDecimalNumber ?? .zero
+
+        return total.decimalValue
     }
     
     public func totalAmountPerCategory(
@@ -308,11 +328,11 @@ extension OperationRepository {
         sumExpression.expression = NSExpression(
             forFunction: ExpressionFunction.sum.rawValue,
             arguments: [
-                NSExpression(forKeyPath: #keyPath(Operation.amount))
+                NSExpression(forKeyPath: #keyPath(Operation.amountDecimal))
             ]
         )
         
-        sumExpression.expressionResultType = .doubleAttributeType
+        sumExpression.expressionResultType = .decimalAttributeType
         
         request.propertiesToFetch = [
             "category.id",
@@ -392,7 +412,7 @@ extension OperationRepository {
         return result.compactMap { dict in
             
             let id = dict["category.id"] as! UUID
-            let amount = dict[ExpressionFunction.result.rawValue] as! Double
+            let amount = dict[ExpressionFunction.result.rawValue] as? NSDecimalNumber ?? .zero
             let title = dict["category.name"] as! String
             let color = dict["category.color"] as! String
             
@@ -400,18 +420,20 @@ extension OperationRepository {
             return AmountPerCategory(
                 id: id,
                 title: title,
-                amount: amount,
+                amount: amount.decimalValue,
                 hexColor: color
             )
         }
     }
 
+    
     public func netExpenseAmountPerCategory(
         in vault: Vault,
         between startDate: Date? = nil,
         and endDate: Date? = nil,
         onlyVisible visible: Bool? = nil
     ) throws -> [AmountPerCategory] {
+
         let request: NSFetchRequest<Operation> = Operation.fetchRequest()
 
         var predicates: [NSPredicate] = [
@@ -456,7 +478,10 @@ extension OperationRepository {
             )
         }
 
-        request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
+        request.predicate = NSCompoundPredicate(
+            andPredicateWithSubpredicates: predicates
+        )
+
         request.relationshipKeyPathsForPrefetching = [
             #keyPath(Operation.category),
             #keyPath(Operation.reimbursements)
@@ -467,37 +492,43 @@ extension OperationRepository {
         struct CategoryTotal {
             let title: String
             let hexColor: String
-            var amount: Double
+            var amount: Decimal
         }
 
-        let totalsByCategory = operations.reduce(into: [UUID: CategoryTotal]()) { result, operation in
+        let totalsByCategory = operations.reduce(
+            into: [UUID: CategoryTotal]()
+        ) { result, operation in
+
             guard
                 let category = operation.category,
                 let categoryID = category.id,
-                let title = category.name,
+                let title = category.title,
                 let hexColor = category.color
             else {
                 return
             }
 
             let reimbursements = (operation.reimbursements as? Set<Reimbursement>) ?? []
+
             let receivedSameVaultReimbursements = reimbursements
                 .filter { reimbursement in
                     reimbursement.reimbursementStatus == .received &&
                     reimbursement.sourceVault?.id == vault.id &&
                     reimbursement.destinationVault?.id == vault.id
                 }
-                .reduce(0) { total, reimbursement in
-                    total + (reimbursement.amount?.doubleValue ?? 0)
+                .reduce(Decimal.zero) { total, reimbursement in
+                    total + (reimbursement.amount?.decimalValue ?? .zero)
                 }
 
-            let netAmount = operation.amount - receivedSameVaultReimbursements
+            let operationAmount = operation.amountDecimal?.decimalValue ?? .zero
+
+            let netAmount = operationAmount - receivedSameVaultReimbursements
 
             if result[categoryID] == nil {
                 result[categoryID] = CategoryTotal(
                     title: title,
                     hexColor: hexColor,
-                    amount: 0
+                    amount: .zero
                 )
             }
 
@@ -514,6 +545,7 @@ extension OperationRepository {
         }
         .sorted { $0.amount > $1.amount }
     }
+
     
     /// Fetches the `Operation` of a given type with the biggest amount in a specific `Vault`.
     ///
@@ -541,10 +573,7 @@ extension OperationRepository {
         ]
 
         if let year {
-            guard (1...9999).contains(year) else {
-                throw GeneralError.invalidYear(year)
-            }
-
+            
             let calendar = Calendar.current
 
             guard

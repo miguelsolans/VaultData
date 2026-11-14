@@ -6,7 +6,8 @@ import PackageDescription
 let package = Package(
     name: "VaultData",
     platforms: [
-        .iOS(.v16)
+        .iOS(.v26),
+        .macOS(.v26)
     ],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
