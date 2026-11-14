@@ -115,7 +115,7 @@ struct PersistenceController {
         }
         
 #if DEBUG
-        // try! container.initializeCloudKitSchema()
+        try! container.initializeCloudKitSchema()
 #endif
         
         container.viewContext.automaticallyMergesChangesFromParent = true
@@ -264,7 +264,7 @@ extension PersistenceController {
                 guard !operations.isEmpty else { return }
                 
                 for operation in operations {
-                    operation.notes = operation.subtitle
+                    operation.notes = operation.subtitle ?? ""
                 }
                 
                 try context.save()
@@ -289,7 +289,7 @@ extension PersistenceController {
                 guard !reimbursements.isEmpty else { return }
                 
                 for reimbursement in reimbursements {
-                    reimbursement.title = reimbursement.notes
+                    reimbursement.title = reimbursement.notes ?? ""
                 }
                 
                 try context.save()
