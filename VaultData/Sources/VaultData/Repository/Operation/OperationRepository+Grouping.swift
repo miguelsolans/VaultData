@@ -8,7 +8,7 @@
 import Foundation
 import VaultDomain
 
-public struct GroupedOperations {
+public struct GroupedOperationsEntity {
     public let date: Date
     
     public let items: [OperationEntity]
@@ -23,7 +23,7 @@ extension OperationRepository {
         calendar: Calendar = .current,
         operationType: OperationType? = nil,
         reimbursementStatus: ReimbursementStatus? = nil
-    ) throws -> [GroupedOperations] {
+    ) throws -> [GroupedOperationsEntity] {
         
         let operations = try getAll(
             from: vault,
@@ -39,7 +39,7 @@ extension OperationRepository {
         
         return grouped
             .map { date, items in
-                GroupedOperations(
+                GroupedOperationsEntity(
                     date: date,
                     items: items.sorted {
                         ($0.date ?? .distantPast) > ($1.date ?? .distantPast)

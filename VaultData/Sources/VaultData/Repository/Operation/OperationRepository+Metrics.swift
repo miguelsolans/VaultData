@@ -30,7 +30,7 @@ extension OperationRepository {
         category categoryFilter: CategoryFilter = .any
     ) throws -> Decimal {
 
-        let request: NSFetchRequest<OperationEntity> = OperationEntity.fetchRequest()
+        let request: NSFetchRequest<NSFetchRequestResult> = OperationEntity.fetchRequest()
         
         let expression = NSExpressionDescription()
         expression.name = ExpressionFunction.result.rawValue
@@ -126,7 +126,7 @@ extension OperationRepository {
         of type: OperationType
     ) throws -> Decimal {
         
-        let request: NSFetchRequest<OperationEntity> = OperationEntity.fetchRequest()
+        let request: NSFetchRequest<NSFetchRequestResult> = OperationEntity.fetchRequest()
         
         let expression = NSExpressionDescription()
         

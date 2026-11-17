@@ -209,7 +209,7 @@ extension ReimbursementRepository {
         between startDate: Date? = nil,
         and endDate: Date? = nil
     ) throws -> Decimal {
-        let request: NSFetchRequest<ReimbursementEntity> = ReimbursementEntity.fetchRequest()
+        let request: NSFetchRequest<NSFetchRequestResult> = ReimbursementEntity.fetchRequest()
         
         let expression = NSExpressionDescription()
         
@@ -298,7 +298,7 @@ extension ReimbursementRepository {
     public func total(
         for operation: OperationEntity
     ) throws -> Decimal? {
-        let request: NSFetchRequest<ReimbursementEntity> = ReimbursementEntity.fetchRequest()
+        let request: NSFetchRequest<NSFetchRequestResult> = ReimbursementEntity.fetchRequest()
         
         let expression = NSExpressionDescription()
         
