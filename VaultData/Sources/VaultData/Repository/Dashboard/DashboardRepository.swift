@@ -17,8 +17,8 @@ public final class DashboardRepository: CoreDataRepository {
         self.context = context
     }
     
-    public func create(for vault: Vault) throws -> Dashboard {
-        let dashboard = Dashboard(context: context)
+    public func create(for vault: VaultEntity) throws -> DashboardEntity {
+        let dashboard = DashboardEntity(context: context)
         
         dashboard.id = UUID()
         dashboard.vault = vault
@@ -28,8 +28,8 @@ public final class DashboardRepository: CoreDataRepository {
         return dashboard
     }
     
-    public func get(by id: UUID) throws -> Dashboard? {
-        let request: NSFetchRequest<Dashboard> = Dashboard.fetchRequest()
+    public func get(by id: UUID) throws -> DashboardEntity? {
+        let request: NSFetchRequest<DashboardEntity> = DashboardEntity.fetchRequest()
         request.fetchLimit = 1
         
         request.predicate = NSPredicate(
@@ -40,13 +40,13 @@ public final class DashboardRepository: CoreDataRepository {
         return try fetchFirst(request)
     }
     
-    public func get(for vault: Vault) throws -> Dashboard? {
-        let request: NSFetchRequest<Dashboard> = Dashboard.fetchRequest()
+    public func get(for vault: VaultEntity) throws -> DashboardEntity? {
+        let request: NSFetchRequest<DashboardEntity> = DashboardEntity.fetchRequest()
         request.fetchLimit = 1
         
         request.predicate = NSPredicate(
             format: "%K == %@",
-            #keyPath(Dashboard.vault),
+            #keyPath(DashboardEntity.vault),
             vault
         )
         

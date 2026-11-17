@@ -8,7 +8,7 @@
 import Foundation
 import VaultDomain
 
-extension Category {
+extension CategoryEntity {
     /// The typed representation of the category’s raw `type` value.
     ///
     /// This property maps the stored raw value to an `OperationType`,
@@ -24,7 +24,7 @@ extension Category {
 }
 
 
-extension Category {
+extension CategoryEntity {
     /// The typed representation of the category’s raw `budgetRole` value.
     ///
     /// This property maps the stored raw value to an `BudgetRole`,

@@ -30,11 +30,11 @@ extension ScheduledOperationRepository {
         endDate: Date? = nil,
         nextOcurrenceDate: Date,
         isActive: Bool,
-        vault: Vault,
-        category: Category
-    ) throws -> ScheduledOperation {
+        vault: VaultEntity,
+        category: CategoryEntity
+    ) throws -> ScheduledOperationEntity {
         
-        let operation = ScheduledOperation(context: context)
+        let operation = ScheduledOperationEntity(context: context)
         let now = Date()
         
         operation.id = UUID()
@@ -71,27 +71,27 @@ extension ScheduledOperationRepository {
     ///     - Fetch operation fails
     public func get(
         by id: UUID
-    ) throws -> ScheduledOperation? {
-        let request: NSFetchRequest<ScheduledOperation> = ScheduledOperation.fetchRequest()
+    ) throws -> ScheduledOperationEntity? {
+        let request: NSFetchRequest<ScheduledOperationEntity> = ScheduledOperationEntity.fetchRequest()
         request.fetchLimit = 1
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
         return try fetchFirst(request)
     }
     
     public func getAll(
-        from vault: Vault
-    ) throws -> [ScheduledOperation] {
+        from vault: VaultEntity
+    ) throws -> [ScheduledOperationEntity] {
         
-        let request: NSFetchRequest<ScheduledOperation> = ScheduledOperation.fetchRequest()
+        let request: NSFetchRequest<ScheduledOperationEntity> = ScheduledOperationEntity.fetchRequest()
         
         request.predicate = NSPredicate(
             format: "%K == %@",
-            #keyPath(ScheduledOperation.vault),
+            #keyPath(ScheduledOperationEntity.vault),
             vault
         )
         
         request.sortDescriptors = [
-            NSSortDescriptor(SortDescriptor(\ScheduledOperation.createdAt, order: .forward))
+            NSSortDescriptor(SortDescriptor(\ScheduledOperationEntity.createdAt, order: .forward))
         ]
         
         return try fetchAll(request)
@@ -99,39 +99,39 @@ extension ScheduledOperationRepository {
 
     public func getDue(
         asOf date: Date
-    ) throws -> [ScheduledOperation] {
+    ) throws -> [ScheduledOperationEntity] {
         let calendar = Calendar.current
         let startOfToday = calendar.startOfDay(for: date)
         guard let startOfTomorrow = calendar.date(byAdding: .day, value: 1, to: startOfToday) else {
             return []
         }
 
-        let request: NSFetchRequest<ScheduledOperation> = ScheduledOperation.fetchRequest()
+        let request: NSFetchRequest<ScheduledOperationEntity> = ScheduledOperationEntity.fetchRequest()
         request.predicate = NSPredicate(
             format: "%K == YES AND %K < %@",
-            #keyPath(ScheduledOperation.isActive),
-            #keyPath(ScheduledOperation.nextOccurrenceDate),
+            #keyPath(ScheduledOperationEntity.isActive),
+            #keyPath(ScheduledOperationEntity.nextOccurrenceDate),
             startOfTomorrow as NSDate
         )
         request.sortDescriptors = [
-            NSSortDescriptor(SortDescriptor(\ScheduledOperation.nextOccurrenceDate, order: .forward))
+            NSSortDescriptor(SortDescriptor(\ScheduledOperationEntity.nextOccurrenceDate, order: .forward))
         ]
         return try fetchAll(request)
     }
     
     public func getAll(
-        from vault: Vault,
+        from vault: VaultEntity,
         active: Bool
-    ) throws -> [ScheduledOperation] {
+    ) throws -> [ScheduledOperationEntity] {
         
-        let request: NSFetchRequest<ScheduledOperation> = ScheduledOperation.fetchRequest()
+        let request: NSFetchRequest<ScheduledOperationEntity> = ScheduledOperationEntity.fetchRequest()
         
         var predicates: [NSPredicate] = []
         
         predicates.append(
             NSPredicate(
                 format: "%K == %@",
-                #keyPath(ScheduledOperation.vault),
+                #keyPath(ScheduledOperationEntity.vault),
                 vault
             )
         )
@@ -139,7 +139,7 @@ extension ScheduledOperationRepository {
         predicates.append(
             NSPredicate(
                 format: "%K == %d",
-                #keyPath(ScheduledOperation.isActive),
+                #keyPath(ScheduledOperationEntity.isActive),
                 active
             )
         )
@@ -147,7 +147,7 @@ extension ScheduledOperationRepository {
         request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
         
         request.sortDescriptors = [
-            NSSortDescriptor(SortDescriptor(\ScheduledOperation.createdAt, order: .forward))
+            NSSortDescriptor(SortDescriptor(\ScheduledOperationEntity.createdAt, order: .forward))
         ]
         
         return try fetchAll(request)
@@ -164,7 +164,7 @@ extension ScheduledOperationRepository {
 // MARK: - Delete
 extension ScheduledOperationRepository {
     
-    public func delete(_ operation: ScheduledOperation) throws {
+    public func delete(_ operation: ScheduledOperationEntity) throws {
         context.delete(operation)
         try save()
     }

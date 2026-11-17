@@ -20,9 +20,9 @@ public final class WidgetRepository: CoreDataRepository {
     
     public func get(
         by id: UUID
-    ) throws -> DashboardWidget? {
+    ) throws -> DashboardWidgetEntity? {
         
-        let request: NSFetchRequest<DashboardWidget> = DashboardWidget.fetchRequest()
+        let request: NSFetchRequest<DashboardWidgetEntity> = DashboardWidgetEntity.fetchRequest()
         request.fetchLimit = 1
         
         let predicate = NSPredicate(
@@ -36,19 +36,19 @@ public final class WidgetRepository: CoreDataRepository {
     }
     
     public func get(
-        from dashboard: Dashboard
-    ) throws -> [DashboardWidget]? {
+        from dashboard: DashboardEntity
+    ) throws -> [DashboardWidgetEntity]? {
         
-        let request: NSFetchRequest<DashboardWidget> = DashboardWidget.fetchRequest()
+        let request: NSFetchRequest<DashboardWidgetEntity> = DashboardWidgetEntity.fetchRequest()
         
         request.predicate = NSPredicate(
             format: "%K == %@",
-            #keyPath(DashboardWidget.dashboard),
+            #keyPath(DashboardWidgetEntity.dashboard),
             dashboard
         )
         
         request.sortDescriptors = [
-            NSSortDescriptor(key: #keyPath(DashboardWidget.sortOrder), ascending: true)
+            NSSortDescriptor(key: #keyPath(DashboardWidgetEntity.sortOrder), ascending: true)
         ]
         
         return try fetchAll(request)
@@ -58,9 +58,9 @@ public final class WidgetRepository: CoreDataRepository {
         widgetType: DashboardWidgetType,
         isVisible: Bool,
         sortOrder: Int,
-        in dashboard: Dashboard
-    ) throws -> DashboardWidget {
-        let widget = DashboardWidget(context: context)
+        in dashboard: DashboardEntity
+    ) throws -> DashboardWidgetEntity {
+        let widget = DashboardWidgetEntity(context: context)
         
         widget.id = UUID()
         widget.isVisible = isVisible
@@ -74,7 +74,7 @@ public final class WidgetRepository: CoreDataRepository {
     }
     
     public func update(
-        _ widget: DashboardWidget,
+        _ widget: DashboardWidgetEntity,
         order: Int? = nil,
         isVisible: Bool? = nil
     ) throws {
@@ -89,7 +89,7 @@ public final class WidgetRepository: CoreDataRepository {
         try save()
     }
     
-    public func createDefaultWidgets(for dashboard: Dashboard) throws {
+    public func createDefaultWidgets(for dashboard: DashboardEntity) throws {
         
         _ = try create(
             widgetType: .totalIncomeAndSpending,

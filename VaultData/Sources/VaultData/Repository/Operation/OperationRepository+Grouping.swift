@@ -11,13 +11,13 @@ import VaultDomain
 public struct GroupedOperations {
     public let date: Date
     
-    public let items: [Operation]
+    public let items: [OperationEntity]
 }
 
 extension OperationRepository {
     
     public func getAllGroupedByDay(
-        from vault: Vault,
+        from vault: VaultEntity,
         between startDate: Date? = nil,
         and endDate: Date? = nil,
         calendar: Calendar = .current,

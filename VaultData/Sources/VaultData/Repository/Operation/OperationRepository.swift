@@ -40,13 +40,13 @@ public final class OperationRepository: CoreDataRepository {
         date: Date,
         type: OperationType,
         amount: Decimal,
-        vault: Vault,
-        category: Category,
-        reimbursementSource: Reimbursement? = nil,
+        vault: VaultEntity,
+        category: CategoryEntity,
+        reimbursementSource: ReimbursementEntity? = nil,
         splittingType: SplittingType = .none
-    ) throws -> Operation {
+    ) throws -> OperationEntity {
         
-        let operation = Operation(context: context)
+        let operation = OperationEntity(context: context)
         let now = Date()
         
         operation.id = UUID()
@@ -69,17 +69,17 @@ public final class OperationRepository: CoreDataRepository {
     // MARK: - Read
     
     public func count(
-        in vault: Vault,
+        in vault: VaultEntity,
         between startDate: Date? = nil,
         and endDate: Date? = nil
     ) throws -> Int {
-        let request: NSFetchRequest<Operation> = Operation.fetchRequest()
+        let request: NSFetchRequest<OperationEntity> = OperationEntity.fetchRequest()
         
         var predicates: [NSPredicate] = []
         
         let vaultPredicate = NSPredicate(
             format: "%K == %@",
-            #keyPath(Operation.vault),
+            #keyPath(OperationEntity.vault),
             vault
         )
         
@@ -88,7 +88,7 @@ public final class OperationRepository: CoreDataRepository {
         if let startDate {
             let predicate = NSPredicate(
                 format: "%K >= %@",
-                #keyPath(Operation.date),
+                #keyPath(OperationEntity.date),
                 startDate as NSDate
             )
             
@@ -98,7 +98,7 @@ public final class OperationRepository: CoreDataRepository {
         if let endDate {
             let predicate = NSPredicate(
                 format: "%K <= %@",
-                #keyPath(Operation.date),
+                #keyPath(OperationEntity.date),
                 endDate as NSDate
             )
             
@@ -120,17 +120,17 @@ public final class OperationRepository: CoreDataRepository {
     /// - Throws: An error if:
     ///    - Fetch operation fails
     public func getAll(
-        from vault: Vault
-    ) throws -> [Operation] {
-        let request: NSFetchRequest<Operation> = Operation.fetchRequest()
+        from vault: VaultEntity
+    ) throws -> [OperationEntity] {
+        let request: NSFetchRequest<OperationEntity> = OperationEntity.fetchRequest()
         request.predicate = NSPredicate(
             format: "%K == %@",
-            #keyPath(Operation.vault),
+            #keyPath(OperationEntity.vault),
             vault
         )
         
         request.sortDescriptors = [
-            NSSortDescriptor(SortDescriptor(\Operation.date, order: .forward)),
+            NSSortDescriptor(SortDescriptor(\OperationEntity.date, order: .forward)),
             
         ]
         return try fetchAll(request)
@@ -147,9 +147,9 @@ public final class OperationRepository: CoreDataRepository {
     /// - Throws: An error if:
     ///     - Fetch operation fails
     public func getAll(
-        from vault: Vault,
+        from vault: VaultEntity,
         year: Int
-    ) throws -> [Operation] {
+    ) throws -> [OperationEntity] {
         
         let calendar = Calendar.current
 
@@ -160,18 +160,18 @@ public final class OperationRepository: CoreDataRepository {
             throw GeneralError.invalidYear(year)
         }
 
-        let request: NSFetchRequest<Operation> = Operation.fetchRequest()
+        let request: NSFetchRequest<OperationEntity> = OperationEntity.fetchRequest()
         request.predicate = NSPredicate(
             format: "%K == %@ AND %K >= %@ AND %K < %@",
-            #keyPath(Operation.vault),
+            #keyPath(OperationEntity.vault),
             vault,
-            #keyPath(Operation.date),
+            #keyPath(OperationEntity.date),
             startOfYear as NSDate,
-            #keyPath(Operation.date),
+            #keyPath(OperationEntity.date),
             endOfYear as NSDate
         )
         request.sortDescriptors = [
-            NSSortDescriptor(SortDescriptor(\Operation.date, order: .forward))
+            NSSortDescriptor(SortDescriptor(\OperationEntity.date, order: .forward))
         ]
 
         return try fetchAll(request)
@@ -189,20 +189,20 @@ public final class OperationRepository: CoreDataRepository {
     /// - Throws: An error if:
     ///     - Fetch operation fails
     public func getAll(
-        from vault: Vault,
+        from vault: VaultEntity,
         between startDate: Date? = nil,
         and endDate: Date? = nil,
         operationType: OperationType? = nil,
         reimbursementStatus: ReimbursementStatus? = nil
-    ) throws -> [Operation] {
-        let request: NSFetchRequest<Operation> = Operation.fetchRequest()
+    ) throws -> [OperationEntity] {
+        let request: NSFetchRequest<OperationEntity> = OperationEntity.fetchRequest()
         
         var predicates: [NSPredicate] = []
         
         predicates.append(
             NSPredicate(
                 format: "%K == %@",
-                #keyPath(Operation.vault),
+                #keyPath(OperationEntity.vault),
                 vault
             )
         )
@@ -211,7 +211,7 @@ public final class OperationRepository: CoreDataRepository {
             predicates.append(
                 NSPredicate(
                     format: "%K >= %@",
-                    #keyPath(Operation.date),
+                    #keyPath(OperationEntity.date),
                     startDate as NSDate
                 )
             )
@@ -221,7 +221,7 @@ public final class OperationRepository: CoreDataRepository {
             predicates.append(
                 NSPredicate(
                     format: "%K <= %@",
-                    #keyPath(Operation.date),
+                    #keyPath(OperationEntity.date),
                     endDate as NSDate
                 )
             )
@@ -231,7 +231,7 @@ public final class OperationRepository: CoreDataRepository {
             predicates.append(
                 NSPredicate(
                     format: "%K == %d",
-                    #keyPath(Operation.type),
+                    #keyPath(OperationEntity.type),
                     Int(operationType.rawValue)
                 )
             )
@@ -241,8 +241,8 @@ public final class OperationRepository: CoreDataRepository {
             predicates.append(
                 NSPredicate(
                     format: "ANY %K.%K == %d",
-                    #keyPath(Operation.reimbursements),
-                    #keyPath(Reimbursement.status),
+                    #keyPath(OperationEntity.reimbursements),
+                    #keyPath(ReimbursementEntity.status),
                     Int(reimbursementStatus.rawValue)
                 )
             )
@@ -252,7 +252,7 @@ public final class OperationRepository: CoreDataRepository {
         
         request.sortDescriptors = [
             NSSortDescriptor(
-                SortDescriptor(\Operation.date, order: .forward)
+                SortDescriptor(\OperationEntity.date, order: .forward)
             )
         ]
         
@@ -270,8 +270,8 @@ public final class OperationRepository: CoreDataRepository {
     ///     - Fetch operation fails
     public func get(
         by id: UUID
-    ) throws -> Operation? {
-        let request: NSFetchRequest<Operation> = Operation.fetchRequest()
+    ) throws -> OperationEntity? {
+        let request: NSFetchRequest<OperationEntity> = OperationEntity.fetchRequest()
         request.fetchLimit = 1
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
         return try fetchFirst(request)
@@ -293,7 +293,7 @@ public final class OperationRepository: CoreDataRepository {
     /// - Throws: An error if:
     ///     - Saving the updated operation fails.
     public func update(
-        _ operation: Operation,
+        _ operation: OperationEntity,
         newTitle: String? = nil,
         newNotes: String?? = nil,
         newDate: Date?? = nil,
@@ -323,7 +323,7 @@ public final class OperationRepository: CoreDataRepository {
 
         if let newCategoryID {
             if let categoryID = newCategoryID {
-                let request: NSFetchRequest<Category> = Category.fetchRequest()
+                let request: NSFetchRequest<CategoryEntity> = CategoryEntity.fetchRequest()
                 request.fetchLimit = 1
                 request.predicate = NSPredicate(format: "id == %@", categoryID as CVarArg)
 
@@ -353,7 +353,7 @@ public final class OperationRepository: CoreDataRepository {
     /// - Throws: an error if saving context fails
     ///
     /// - Important: After deletion, the provided `Operation` instance should no longer be used, as it becomes invalid once removed from the context.
-    public func delete(_ operation: Operation) throws {
+    public func delete(_ operation: OperationEntity) throws {
         context.delete(operation)
         try save()
     }
@@ -363,7 +363,7 @@ public final class OperationRepository: CoreDataRepository {
     /// - Throws: an error if saving context fails
     ///
     /// - Important: After deletion, all information regarding any `Operation` in the specific `Vault` instance should no longer be used, as it becomes invalid once removed from the context.
-    public func deleteAll(in vault: Vault) throws {
+    public func deleteAll(in vault: VaultEntity) throws {
         let operations = try getAll(from: vault)
         operations.forEach(context.delete)
         try save()
@@ -378,16 +378,16 @@ extension OperationRepository {
         with categoryNames: [String]?,
         of type: OperationType?, in
         vault: [String]?
-    ) throws -> [Operation] {
+    ) throws -> [OperationEntity] {
         
-        let request: NSFetchRequest<Operation> = Operation.fetchRequest()
+        let request: NSFetchRequest<OperationEntity> = OperationEntity.fetchRequest()
         
         var predicates: [NSPredicate] = []
         
         if let title {
             let predicate = NSPredicate(
                 format: "%K CONTAINS[c] %@",
-                #keyPath(Operation.title),
+                #keyPath(OperationEntity.title),
                 title
             )
             
@@ -397,7 +397,7 @@ extension OperationRepository {
         if let minAmount {
             let predicate = NSPredicate(
                 format: "%K >= %@",
-                #keyPath(Operation.amountDecimal),
+                #keyPath(OperationEntity.amountDecimal),
                 minAmount
             )
             
@@ -407,7 +407,7 @@ extension OperationRepository {
         if let maxAmount {
             let predicate = NSPredicate(
                 format: "%K >= %@",
-                #keyPath(Operation.amountDecimal),
+                #keyPath(OperationEntity.amountDecimal),
                 maxAmount
             )
             
@@ -417,7 +417,7 @@ extension OperationRepository {
         if let vault {
             let predicate = NSPredicate(
                 format: "%K IN %@",
-                #keyPath(Operation.vault.title),
+                #keyPath(OperationEntity.vault.title),
                 vault
             )
             
@@ -427,7 +427,7 @@ extension OperationRepository {
         if let type {
             let predicate = NSPredicate(
                 format: "%K == %d",
-                #keyPath(Operation.type),
+                #keyPath(OperationEntity.type),
                 Int(type.rawValue)
             )
             
@@ -445,15 +445,15 @@ extension OperationRepository {
 extension OperationRepository {
     
     public func getScheduledOccurrence(
-        for scheduledOperation: ScheduledOperation,
+        for scheduledOperation: ScheduledOperationEntity,
         on occurrenceDate: Date
-    ) throws -> Operation? {
-        let request: NSFetchRequest<Operation> = Operation.fetchRequest()
+    ) throws -> OperationEntity? {
+        let request: NSFetchRequest<OperationEntity> = OperationEntity.fetchRequest()
         request.predicate = NSPredicate(
             format: "%K == %@ AND %K == %@",
-            #keyPath(Operation.scheduledOperation),
+            #keyPath(OperationEntity.scheduledOperation),
             scheduledOperation,
-            #keyPath(Operation.scheduledDate),
+            #keyPath(OperationEntity.scheduledDate),
             occurrenceDate as NSDate
         )
         return try fetchFirst(request)

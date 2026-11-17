@@ -10,7 +10,7 @@ import FoundationModels
 import VaultDomain
 
 // MARK: - Computed Properties
-extension Operation {
+extension OperationEntity {
     /// The typed representation of the operation’s raw `type` value.
     ///
     /// This property provides a safe mapping between the stored raw value

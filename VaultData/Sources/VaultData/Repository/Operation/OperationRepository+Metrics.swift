@@ -10,8 +10,8 @@ import VaultDomain
 
 public enum CategoryFilter {
     case any
-    case matching(Category)
-    case excluding(Category)
+    case matching(CategoryEntity)
+    case excluding(CategoryEntity)
 }
 
 internal enum ExpressionFunction: String {
@@ -23,21 +23,21 @@ internal enum ExpressionFunction: String {
 extension OperationRepository {
     
     public func totalAmount(
-        in vault: Vault,
+        in vault: VaultEntity,
         between startDate: Date? = nil,
         and endDate: Date? = nil,
         of type: OperationType,
         category categoryFilter: CategoryFilter = .any
     ) throws -> Decimal {
 
-        let request: NSFetchRequest<NSFetchRequestResult> = Operation.fetchRequest()
+        let request: NSFetchRequest<OperationEntity> = OperationEntity.fetchRequest()
         
         let expression = NSExpressionDescription()
         expression.name = ExpressionFunction.result.rawValue
         expression.expression = NSExpression(
             forFunction: ExpressionFunction.sum.rawValue,
             arguments: [
-                NSExpression(forKeyPath: #keyPath(Operation.amountDecimal))
+                NSExpression(forKeyPath: #keyPath(OperationEntity.amountDecimal))
             ]
         )
         expression.expressionResultType = .decimalAttributeType
@@ -48,7 +48,7 @@ extension OperationRepository {
         predicates.append(
             NSPredicate(
                 format: "%K == %@",
-                #keyPath(Operation.vault),
+                #keyPath(OperationEntity.vault),
                 vault
             )
         )
@@ -56,7 +56,7 @@ extension OperationRepository {
         predicates.append(
             NSPredicate(
                 format: "%K == %d",
-                #keyPath(Operation.type),
+                #keyPath(OperationEntity.type),
                 Int(type.rawValue)
             )
         )
@@ -66,7 +66,7 @@ extension OperationRepository {
             predicates.append(
                 NSPredicate(
                     format: "%K >= %@",
-                    #keyPath(Operation.date),
+                    #keyPath(OperationEntity.date),
                     startDate as NSDate
                 )
             )
@@ -76,7 +76,7 @@ extension OperationRepository {
             predicates.append(
                 NSPredicate(
                     format: "%K <= %@",
-                    #keyPath(Operation.date),
+                    #keyPath(OperationEntity.date),
                     endDate as NSDate
                 )
             )
@@ -90,7 +90,7 @@ extension OperationRepository {
             predicates.append(
                 NSPredicate(
                     format: "%K == %@",
-                    #keyPath(Operation.category),
+                    #keyPath(OperationEntity.category),
                     category
                 )
             )
@@ -99,7 +99,7 @@ extension OperationRepository {
             predicates.append(
                 NSPredicate(
                     format: "%K != %@",
-                    #keyPath(Operation.category),
+                    #keyPath(OperationEntity.category),
                     category
                 )
             )
@@ -120,13 +120,13 @@ extension OperationRepository {
     }
     
     public func averageAmount(
-        in vault: Vault,
+        in vault: VaultEntity,
         between startDate: Date? = nil,
         and endDate: Date? = nil,
         of type: OperationType
     ) throws -> Decimal {
         
-        let request: NSFetchRequest<NSFetchRequestResult> = Operation.fetchRequest()
+        let request: NSFetchRequest<OperationEntity> = OperationEntity.fetchRequest()
         
         let expression = NSExpressionDescription()
         
@@ -135,7 +135,7 @@ extension OperationRepository {
         expression.expression = NSExpression(
             forFunction: ExpressionFunction.average.rawValue,
             arguments: [
-                NSExpression(forKeyPath: #keyPath(Operation.amountDecimal))
+                NSExpression(forKeyPath: #keyPath(OperationEntity.amountDecimal))
             ]
         )
         
@@ -145,7 +145,7 @@ extension OperationRepository {
         
         let vaultPredicate = NSPredicate(
             format: "%K == %@",
-            #keyPath(Operation.vault),
+            #keyPath(OperationEntity.vault),
             vault
         )
         
@@ -153,7 +153,7 @@ extension OperationRepository {
         
         let typePredicate = NSPredicate(
             format: "%K == %d",
-            #keyPath(Operation.type),
+            #keyPath(OperationEntity.type),
             Int(type.rawValue)
         )
         
@@ -164,7 +164,7 @@ extension OperationRepository {
         if let startDate {
             let predicate = NSPredicate(
                 format: "%K >= %@",
-                #keyPath(Operation.date),
+                #keyPath(OperationEntity.date),
                 startDate as NSDate
             )
             
@@ -174,7 +174,7 @@ extension OperationRepository {
         if let endDate {
             let predicate = NSPredicate(
                 format: "%K <= %@",
-                #keyPath(Operation.date),
+                #keyPath(OperationEntity.date),
                 endDate as NSDate
             )
             
@@ -194,13 +194,13 @@ extension OperationRepository {
     }
     
     public func totalAmountHidden(
-        in vault: Vault,
+        in vault: VaultEntity,
         between startDate: Date,
         and endDate: Date,
         of type: OperationType
     ) throws -> Decimal {
         
-        let request: NSFetchRequest<NSFetchRequestResult> = Operation.fetchRequest()
+        let request: NSFetchRequest<OperationEntity> = OperationEntity.fetchRequest()
         
         let expression = NSExpressionDescription()
         
@@ -209,7 +209,7 @@ extension OperationRepository {
         expression.expression = NSExpression(
             forFunction: ExpressionFunction.sum.rawValue,
             arguments: [
-                NSExpression(forKeyPath: #keyPath(Operation.amountDecimal))
+                NSExpression(forKeyPath: #keyPath(OperationEntity.amountDecimal))
             ]
         )
         
@@ -218,22 +218,22 @@ extension OperationRepository {
         request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
             NSPredicate(
                 format: "%K == %@",
-                #keyPath(Operation.vault),
+                #keyPath(OperationEntity.vault),
                 vault
             ),
             NSPredicate(
                 format: "%K >= %@",
-                #keyPath(Operation.date),
+                #keyPath(OperationEntity.date),
                 startDate as NSDate
             ),
             NSPredicate(
                 format: "%K <= %@",
-                #keyPath(Operation.date),
+                #keyPath(OperationEntity.date),
                 endDate as NSDate
             ),
             NSPredicate(
                 format: "%K == %d",
-                #keyPath(Operation.type),
+                #keyPath(OperationEntity.type),
                 Int(type.rawValue)
             ),
             NSPredicate(
@@ -252,19 +252,19 @@ extension OperationRepository {
     }
     
     public func totalReimbursed(
-        in vault: Vault,
+        in vault: VaultEntity,
         withStatus status: ReimbursementStatus,
         sameDestinationVault: Bool
     ) throws -> Decimal {
 
-        let request: NSFetchRequest<NSFetchRequestResult> = Reimbursement.fetchRequest()
+        let request: NSFetchRequest<ReimbursementEntity> = ReimbursementEntity.fetchRequest()
 
         let expression = NSExpressionDescription()
         expression.name = ExpressionFunction.result.rawValue
         expression.expression = NSExpression(
             forFunction: ExpressionFunction.sum.rawValue,
             arguments: [
-                NSExpression(forKeyPath: #keyPath(Reimbursement.amount))
+                NSExpression(forKeyPath: #keyPath(ReimbursementEntity.amount))
             ]
         )
         expression.expressionResultType = .decimalAttributeType
@@ -274,7 +274,7 @@ extension OperationRepository {
         predicates.append(
             NSPredicate(
                 format: "%K == %@",
-                #keyPath(Reimbursement.sourceVault),
+                #keyPath(ReimbursementEntity.sourceVault),
                 vault
             )
         )
@@ -283,7 +283,7 @@ extension OperationRepository {
             predicates.append(
                 NSPredicate(
                     format: "%K == %@",
-                    #keyPath(Reimbursement.destinationVault),
+                    #keyPath(ReimbursementEntity.destinationVault),
                     vault
                 )
             )
@@ -292,7 +292,7 @@ extension OperationRepository {
         predicates.append(
             NSPredicate(
                 format: "%K == %d",
-                #keyPath(Reimbursement.status),
+                #keyPath(ReimbursementEntity.status),
                 Int(status.rawValue)
             )
         )
@@ -312,7 +312,7 @@ extension OperationRepository {
     }
     
     public func totalAmountPerCategory(
-        in vault: Vault,
+        in vault: VaultEntity,
         between startDate: Date? = nil,
         and endDate: Date? = nil,
         of type: OperationType,
@@ -328,7 +328,7 @@ extension OperationRepository {
         sumExpression.expression = NSExpression(
             forFunction: ExpressionFunction.sum.rawValue,
             arguments: [
-                NSExpression(forKeyPath: #keyPath(Operation.amountDecimal))
+                NSExpression(forKeyPath: #keyPath(OperationEntity.amountDecimal))
             ]
         )
         
@@ -351,7 +351,7 @@ extension OperationRepository {
         
         let vaultPredicate = NSPredicate(
             format: "%K == %@",
-            #keyPath(Operation.vault),
+            #keyPath(OperationEntity.vault),
             vault
         )
         
@@ -360,7 +360,7 @@ extension OperationRepository {
         if let startDate {
             let predicate = NSPredicate(
                 format: "%K >= %@",
-                #keyPath(Operation.date),
+                #keyPath(OperationEntity.date),
                 startDate as NSDate
             )
             
@@ -370,7 +370,7 @@ extension OperationRepository {
         if let endDate {
             let predicate = NSPredicate(
                 format: "%K <= %@",
-                #keyPath(Operation.date),
+                #keyPath(OperationEntity.date),
                 endDate as NSDate
             )
             
@@ -379,7 +379,7 @@ extension OperationRepository {
         
         let operationTypePredicate = NSPredicate(
             format: "%K == %d",
-            #keyPath(Operation.type),
+            #keyPath(OperationEntity.type),
             Int(type.rawValue)
         )
         
@@ -428,23 +428,23 @@ extension OperationRepository {
 
     
     public func netExpenseAmountPerCategory(
-        in vault: Vault,
+        in vault: VaultEntity,
         between startDate: Date? = nil,
         and endDate: Date? = nil,
         onlyVisible visible: Bool? = nil
     ) throws -> [AmountPerCategory] {
 
-        let request: NSFetchRequest<Operation> = Operation.fetchRequest()
+        let request: NSFetchRequest<OperationEntity> = OperationEntity.fetchRequest()
 
         var predicates: [NSPredicate] = [
             NSPredicate(
                 format: "%K == %@",
-                #keyPath(Operation.vault),
+                #keyPath(OperationEntity.vault),
                 vault
             ),
             NSPredicate(
                 format: "%K == %d",
-                #keyPath(Operation.type),
+                #keyPath(OperationEntity.type),
                 Int(OperationType.expense.rawValue)
             )
         ]
@@ -453,7 +453,7 @@ extension OperationRepository {
             predicates.append(
                 NSPredicate(
                     format: "%K >= %@",
-                    #keyPath(Operation.date),
+                    #keyPath(OperationEntity.date),
                     startDate as NSDate
                 )
             )
@@ -463,7 +463,7 @@ extension OperationRepository {
             predicates.append(
                 NSPredicate(
                     format: "%K <= %@",
-                    #keyPath(Operation.date),
+                    #keyPath(OperationEntity.date),
                     endDate as NSDate
                 )
             )
@@ -483,8 +483,8 @@ extension OperationRepository {
         )
 
         request.relationshipKeyPathsForPrefetching = [
-            #keyPath(Operation.category),
-            #keyPath(Operation.reimbursements)
+            #keyPath(OperationEntity.category),
+            #keyPath(OperationEntity.reimbursements)
         ]
 
         let operations = try fetchAll(request)
@@ -508,7 +508,7 @@ extension OperationRepository {
                 return
             }
 
-            let reimbursements = (operation.reimbursements as? Set<Reimbursement>) ?? []
+            let reimbursements = (operation.reimbursements as? Set<ReimbursementEntity>) ?? []
 
             let receivedSameVaultReimbursements = reimbursements
                 .filter { reimbursement in
@@ -561,15 +561,15 @@ extension OperationRepository {
     ///   - Any fetch-related error.
     public func getBiggestOperation(
         of type: OperationType,
-        from vault: Vault,
+        from vault: VaultEntity,
         year: Int? = nil
-    ) throws -> Operation? {
-        let request: NSFetchRequest<Operation> = Operation.fetchRequest()
+    ) throws -> OperationEntity? {
+        let request: NSFetchRequest<OperationEntity> = OperationEntity.fetchRequest()
         request.fetchLimit = 1
 
         var predicates: [NSPredicate] = [
-            NSPredicate(format: "%K == %@", #keyPath(Operation.vault), vault),
-            NSPredicate(format: "%K == %d", #keyPath(Operation.type), Int(type.rawValue))
+            NSPredicate(format: "%K == %@", #keyPath(OperationEntity.vault), vault),
+            NSPredicate(format: "%K == %d", #keyPath(OperationEntity.type), Int(type.rawValue))
         ]
 
         if let year {
@@ -586,9 +586,9 @@ extension OperationRepository {
             predicates.append(
                 NSPredicate(
                     format: "%K >= %@ AND %K < %@",
-                    #keyPath(Operation.date),
+                    #keyPath(OperationEntity.date),
                     startOfYear as NSDate,
-                    #keyPath(Operation.date),
+                    #keyPath(OperationEntity.date),
                     endOfYear as NSDate
                 )
             )
@@ -596,8 +596,8 @@ extension OperationRepository {
 
         request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
         request.sortDescriptors = [
-            NSSortDescriptor(key: #keyPath(Operation.amount), ascending: false),
-            NSSortDescriptor(key: #keyPath(Operation.date), ascending: false)
+            NSSortDescriptor(key: #keyPath(OperationEntity.amount), ascending: false),
+            NSSortDescriptor(key: #keyPath(OperationEntity.date), ascending: false)
         ]
 
         return try fetchFirst(request)

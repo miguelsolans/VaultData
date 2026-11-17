@@ -8,7 +8,8 @@
 import Foundation
 import VaultDomain
 
-extension DashboardWidget {
+extension DashboardWidgetEntity {
+    
     public var widgetType: DashboardWidgetType {
         get {
             return DashboardWidgetType(rawValue: type) ?? .unknown
