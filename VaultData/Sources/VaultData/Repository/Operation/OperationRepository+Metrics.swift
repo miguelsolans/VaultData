@@ -8,17 +8,6 @@
 import CoreData
 import VaultDomain
 
-public enum CategoryFilter {
-    case any
-    case matching(CategoryEntity)
-    case excluding(CategoryEntity)
-}
-
-internal enum ExpressionFunction: String {
-    case sum = "sum:"
-    case average = "average:"
-    case result = "result"
-}
 
 extension OperationRepository {
     
