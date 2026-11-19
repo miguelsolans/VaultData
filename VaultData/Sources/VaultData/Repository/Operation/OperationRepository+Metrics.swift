@@ -240,66 +240,6 @@ extension OperationRepository {
         return total.decimalValue
     }
     
-    public func totalReimbursed(
-        in vault: VaultEntity,
-        withStatus status: ReimbursementStatus,
-        sameDestinationVault: Bool
-    ) throws -> Decimal {
-
-        let request: NSFetchRequest<ReimbursementEntity> = ReimbursementEntity.fetchRequest()
-
-        let expression = NSExpressionDescription()
-        expression.name = ExpressionFunction.result.rawValue
-        expression.expression = NSExpression(
-            forFunction: ExpressionFunction.sum.rawValue,
-            arguments: [
-                NSExpression(forKeyPath: #keyPath(ReimbursementEntity.amount))
-            ]
-        )
-        expression.expressionResultType = .decimalAttributeType
-
-        var predicates: [NSPredicate] = []
-
-        predicates.append(
-            NSPredicate(
-                format: "%K == %@",
-                #keyPath(ReimbursementEntity.sourceVault),
-                vault
-            )
-        )
-
-        if sameDestinationVault {
-            predicates.append(
-                NSPredicate(
-                    format: "%K == %@",
-                    #keyPath(ReimbursementEntity.destinationVault),
-                    vault
-                )
-            )
-        }
-
-        predicates.append(
-            NSPredicate(
-                format: "%K == %d",
-                #keyPath(ReimbursementEntity.status),
-                Int(status.rawValue)
-            )
-        )
-
-        request.predicate = NSCompoundPredicate(
-            andPredicateWithSubpredicates: predicates
-        )
-
-        request.propertiesToFetch = [expression]
-        request.resultType = .dictionaryResultType
-
-        let result = try context.fetch(request) as? [[String: Any]]
-
-        let total = result?.first?[ExpressionFunction.result.rawValue] as? NSDecimalNumber ?? .zero
-
-        return total.decimalValue
-    }
-    
     public func totalAmountPerCategory(
         in vault: VaultEntity,
         between startDate: Date? = nil,
