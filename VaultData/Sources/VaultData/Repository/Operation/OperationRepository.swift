@@ -71,7 +71,8 @@ public final class OperationRepository: CoreDataRepository {
     public func count(
         in vault: VaultEntity,
         between startDate: Date? = nil,
-        and endDate: Date? = nil
+        and endDate: Date? = nil,
+        type operationType: OperationType? = nil
     ) throws -> Int {
         let request: NSFetchRequest<OperationEntity> = OperationEntity.fetchRequest()
         
@@ -100,6 +101,16 @@ public final class OperationRepository: CoreDataRepository {
                 format: "%K <= %@",
                 #keyPath(OperationEntity.date),
                 endDate as NSDate
+            )
+            
+            predicates.append(predicate)
+        }
+        
+        if let operationType {
+            let predicate = NSPredicate(
+                format: "%K == %d",
+                #keyPath(OperationEntity.type),
+                Int(operationType.rawValue)
             )
             
             predicates.append(predicate)
