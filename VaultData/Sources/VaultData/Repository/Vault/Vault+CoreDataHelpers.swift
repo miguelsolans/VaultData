@@ -8,7 +8,8 @@
 import Foundation
 
 // MARK: - Vault
-extension Vault {
+extension VaultEntity {
+    
     /// The current balance of the vault.
     ///
     /// This value is calculated dynamically by combining the `initialDeposit`
@@ -26,7 +27,7 @@ extension Vault {
     /// - Note: If the vault has no operations and no received same-vault
     ///   reimbursements, the balance equals `initialDeposit`.
     public var currentBalance: Decimal {
-        let operations = (operations as? Set<Operation>) ?? []
+        let operations = (operations as? Set<OperationEntity>) ?? []
         
         let operationsBalance = operations.reduce(Decimal.zero) { result, operation in
             let amount = operation.amountDecimal?.decimalValue ?? .zero
@@ -40,7 +41,7 @@ extension Vault {
             }
         }
         
-        let reimbursements = (sourceReimbursements as? Set<Reimbursement>) ?? []
+        let reimbursements = (sourceReimbursements as? Set<ReimbursementEntity>) ?? []
         
         let sameVaultReceivedReimbursements = reimbursements
             .filter { reimbursement in

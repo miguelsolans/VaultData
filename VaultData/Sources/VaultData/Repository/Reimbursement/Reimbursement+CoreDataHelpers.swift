@@ -8,7 +8,8 @@
 import VaultDomain
 
 // MARK: - Reimbursement
-extension Reimbursement {
+extension ReimbursementEntity {
+    
     /// The typed representation of the reimbursement’s raw `type` value.
     ///
     /// This property provides a safe mapping between the stored raw value

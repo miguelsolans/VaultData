@@ -115,7 +115,7 @@ struct PersistenceController {
         }
         
 #if DEBUG
-        try! container.initializeCloudKitSchema()
+        // try! container.initializeCloudKitSchema()
 #endif
         
         container.viewContext.automaticallyMergesChangesFromParent = true

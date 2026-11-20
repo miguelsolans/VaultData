@@ -40,8 +40,8 @@ public final class CategoryRepository: CoreDataRepository {
         vaultID: UUID,
         visibleInPlot: Bool,
         budgetRole: BudgetRole = .unclassified
-    ) throws -> Category {
-        let vaultRequest: NSFetchRequest<Vault> = Vault.fetchRequest()
+    ) throws -> CategoryEntity {
+        let vaultRequest: NSFetchRequest<VaultEntity> = VaultEntity.fetchRequest()
         vaultRequest.fetchLimit = 1
         vaultRequest.predicate = NSPredicate(format: "id == %@", vaultID as CVarArg)
 
@@ -49,7 +49,7 @@ public final class CategoryRepository: CoreDataRepository {
             throw VaultError.notFound(vaultID)
         }
 
-        let category = Category(context: context)
+        let category = CategoryEntity(context: context)
         category.id = UUID()
         category.title = title.trimmingCharacters(in: .whitespacesAndNewlines)
         category.emoji = emoji
@@ -66,10 +66,10 @@ public final class CategoryRepository: CoreDataRepository {
     public func findOrCreate(
         title: String,
         type: OperationType,
-        in vault: Vault,
+        in vault: VaultEntity,
         color: String,
         visibleInPlot: Bool = true
-    ) throws -> Category {
+    ) throws -> CategoryEntity {
         
         let normalizedName = title.trimmingCharacters(in: .whitespacesAndNewlines);
         
@@ -94,7 +94,7 @@ public final class CategoryRepository: CoreDataRepository {
     ///
     /// - Throws: An error if the fetch request fails to execute.
     public func hasAny() throws -> Bool {
-        let request: NSFetchRequest<Category> = Category.fetchRequest()
+        let request: NSFetchRequest<CategoryEntity> = CategoryEntity.fetchRequest()
         request.fetchLimit = 1
         return try count(request) > 0
     }
@@ -112,19 +112,19 @@ public final class CategoryRepository: CoreDataRepository {
     ///
     /// - Throws: An error if the fetch request fails to execute.
     public func getAll(
-        from vault: Vault,
+        from vault: VaultEntity,
         operationType: OperationType? = nil,
         name: String? = nil,
         order: ListOrdering = .ascending,
         archiveFilter: ArchiveFilter = .any
-    ) throws -> [Category] {
-        let request: NSFetchRequest<Category> = Category.fetchRequest()
+    ) throws -> [CategoryEntity] {
+        let request: NSFetchRequest<CategoryEntity> = CategoryEntity.fetchRequest()
         
         var predicates: [NSPredicate] = []
         
         let vaultPredicate = NSPredicate(
             format: "%K == %@",
-            #keyPath(Category.vault),
+            #keyPath(CategoryEntity.vault),
             vault
         )
         
@@ -133,7 +133,7 @@ public final class CategoryRepository: CoreDataRepository {
         if let operationType {
             let predicate = NSPredicate(
                 format: "%K == %d",
-                #keyPath(Operation.type),
+                #keyPath(OperationEntity.type),
                 Int(operationType.rawValue)
             )
             
@@ -145,7 +145,7 @@ public final class CategoryRepository: CoreDataRepository {
             
             let predicate = NSPredicate(
                 format: "%K ==[c] %@",
-                #keyPath(Category.title),
+                #keyPath(CategoryEntity.title),
                 normalizedName
             )
             
@@ -159,7 +159,7 @@ public final class CategoryRepository: CoreDataRepository {
         case .active:
             let predicate = NSPredicate(
                 format: "%K == false",
-                #keyPath(Category.archived)
+                #keyPath(CategoryEntity.archived)
             )
             
             predicates.append(predicate)
@@ -167,7 +167,7 @@ public final class CategoryRepository: CoreDataRepository {
         case .archived:
             let predicate = NSPredicate(
                 format: "%K == true",
-                #keyPath(Category.archived)
+                #keyPath(CategoryEntity.archived)
             )
             
             predicates.append(predicate)
@@ -181,12 +181,12 @@ public final class CategoryRepository: CoreDataRepository {
         
         switch order {
         case .ascending:
-            sortDescriptors.append(.init(key: #keyPath(Category.title), ascending: true))
+            sortDescriptors.append(.init(key: #keyPath(CategoryEntity.title), ascending: true))
         case .descending:
-            sortDescriptors.append(.init(key: #keyPath(Category.title), ascending: false))
+            sortDescriptors.append(.init(key: #keyPath(CategoryEntity.title), ascending: false))
         case .type:
-            sortDescriptors.append(.init(key: #keyPath(Category.type), ascending: true))
-            sortDescriptors.append(.init(key: #keyPath(Category.title), ascending: true))
+            sortDescriptors.append(.init(key: #keyPath(CategoryEntity.type), ascending: true))
+            sortDescriptors.append(.init(key: #keyPath(CategoryEntity.title), ascending: true))
         }
         
         request.sortDescriptors = sortDescriptors
@@ -209,10 +209,10 @@ public final class CategoryRepository: CoreDataRepository {
         by id: UUID? = nil,
         title: String? = nil,
         type: OperationType? = nil,
-        in vault: Vault? = nil
-    ) throws -> Category? {
+        in vault: VaultEntity? = nil
+    ) throws -> CategoryEntity? {
         
-        let request: NSFetchRequest<Category> = Category.fetchRequest()
+        let request: NSFetchRequest<CategoryEntity> = CategoryEntity.fetchRequest()
         request.fetchLimit = 1
         
         var predicates: [NSPredicate] = []
@@ -229,7 +229,7 @@ public final class CategoryRepository: CoreDataRepository {
         if let vault {
             let predicate = NSPredicate(
                 format: "%K == %@",
-                #keyPath(Category.vault),
+                #keyPath(CategoryEntity.vault),
                 vault
             )
             
@@ -241,7 +241,7 @@ public final class CategoryRepository: CoreDataRepository {
             
             let predicate = NSPredicate(
                 format: "%K ==[c] %@",
-                #keyPath(Category.title),
+                #keyPath(CategoryEntity.title),
                 normalizedName
             )
             
@@ -251,7 +251,7 @@ public final class CategoryRepository: CoreDataRepository {
         if let type {
             let predicate = NSPredicate(
                 format: "%K == %d",
-                #keyPath(Category.type),
+                #keyPath(CategoryEntity.type),
                 Int(type.rawValue)
             )
             
@@ -277,7 +277,7 @@ public final class CategoryRepository: CoreDataRepository {
     ///
     ///  - Throws: An error if update request fails to execute
     public func update(
-        _ category: Category,
+        _ category: CategoryEntity,
         newTitle: String? = nil,
         newEmoji: String? = nil,
         newColor: String? = nil,
@@ -323,7 +323,7 @@ public final class CategoryRepository: CoreDataRepository {
     /// - Throws: An error if saving context fails
     ///
     /// - Important: After deletion, the provided `Category` instance should no longer be used, as it becomes invalid once removed from the context.
-    public func delete(_ category: Category) throws {
+    public func delete(_ category: CategoryEntity) throws {
         context.delete(category)
         try save()
     }
@@ -333,7 +333,7 @@ public final class CategoryRepository: CoreDataRepository {
     /// - Throws: An error if saving context fails
     ///
     /// - Important: After deletion, all information regarind any `Category` instance should no longer be used, as it becomes invalid once removed from the context.
-    public func deleteAll(from vault: Vault) throws {
+    public func deleteAll(from vault: VaultEntity) throws {
         let categories = try getAll(from: vault)
         categories.forEach(context.delete)
         try save()

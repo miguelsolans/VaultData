@@ -18,18 +18,18 @@ public final class SettingsRepository: CoreDataRepository {
 }
 
 extension SettingsRepository {
-    public func create() throws -> Settings {
+    public func create() throws -> SettingsEntity {
         
-        let settings = Settings(context: context)
+        let settings = SettingsEntity(context: context)
         
         try save()
         
         return settings
     }
     
-    public func get() throws -> Settings? {
+    public func get() throws -> SettingsEntity? {
         
-        let request: NSFetchRequest<Settings> = Settings.fetchRequest()
+        let request: NSFetchRequest<SettingsEntity> = SettingsEntity.fetchRequest()
         request.fetchLimit = 1
         
         return try fetchFirst(request)
@@ -38,7 +38,7 @@ extension SettingsRepository {
 
 extension SettingsRepository {
     
-    public func setFavorite(vault: Vault) throws -> Settings {
+    public func setFavorite(vault: VaultEntity) throws -> SettingsEntity {
         
         guard let settings = try get() else {
             throw SettingsError.notFound
@@ -51,7 +51,7 @@ extension SettingsRepository {
         return settings
     }
     
-    public func getFavorite() throws -> Vault? {
+    public func getFavorite() throws -> VaultEntity? {
         
         guard let settings = try get() else {
             throw SettingsError.notFound

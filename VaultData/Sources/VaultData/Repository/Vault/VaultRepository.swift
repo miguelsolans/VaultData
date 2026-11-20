@@ -31,9 +31,9 @@ public final class VaultRepository: CoreDataRepository {
     public func create(
         with title: String,
         initialDeposit: Decimal
-    ) throws -> Vault {
+    ) throws -> VaultEntity {
 
-        let vault = Vault(context: context)
+        let vault = VaultEntity(context: context)
         vault.id = UUID()
         vault.title = title
         vault.initialAmountDecimal = NSDecimalNumber(decimal: initialDeposit)
@@ -45,7 +45,7 @@ public final class VaultRepository: CoreDataRepository {
     // MARK: - Read
     
     public func count() throws -> Int {
-        let request: NSFetchRequest<Vault> = Vault.fetchRequest()
+        let request: NSFetchRequest<VaultEntity> = VaultEntity.fetchRequest()
         request.fetchLimit = 1
         return try count(request)
     }
@@ -53,10 +53,10 @@ public final class VaultRepository: CoreDataRepository {
     /// Retrieves a list of all `Vault` in memory
     ///
     /// - Returns: A list of `Vault`
-    public func getAll() throws -> [Vault] {
-        let request: NSFetchRequest<Vault> = Vault.fetchRequest()
+    public func getAll() throws -> [VaultEntity] {
+        let request: NSFetchRequest<VaultEntity> = VaultEntity.fetchRequest()
         request.sortDescriptors = [
-            NSSortDescriptor(SortDescriptor(\Vault.title, order: .forward))
+            NSSortDescriptor(SortDescriptor(\VaultEntity.title, order: .forward))
         ]
         return try fetchAll(request)
     }
@@ -70,8 +70,8 @@ public final class VaultRepository: CoreDataRepository {
     /// - Throws: An error if the fetch request fails to execute.
     public func get(
         by id: UUID
-    ) throws -> Vault? {
-        let request: NSFetchRequest<Vault> = Vault.fetchRequest()
+    ) throws -> VaultEntity? {
+        let request: NSFetchRequest<VaultEntity> = VaultEntity.fetchRequest()
         request.fetchLimit = 1
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
         return try fetchFirst(request)
@@ -86,8 +86,8 @@ public final class VaultRepository: CoreDataRepository {
     /// - Throws: An error if the fetch request fails to execute.
     public func get(
         by name: String
-    ) throws -> Vault? {
-        let request: NSFetchRequest<Vault> = Vault.fetchRequest()
+    ) throws -> VaultEntity? {
+        let request: NSFetchRequest<VaultEntity> = VaultEntity.fetchRequest()
         
         request.fetchLimit = 1
         request.predicate = NSPredicate(format: "title ==[c] %@", name)
@@ -107,7 +107,7 @@ public final class VaultRepository: CoreDataRepository {
     /// - Throws: An error if:
     ///     - Saving the updated vault fails.
     public func update(
-        _ vault: Vault,
+        _ vault: VaultEntity,
         newTitle: String? = nil,
         initialDeposit: Decimal? = nil,
     ) throws {
@@ -122,13 +122,13 @@ public final class VaultRepository: CoreDataRepository {
         try save()
     }
     
-    public func setMainIncome(_ vault: Vault, category: Category) throws {
+    public func setMainIncome(_ vault: VaultEntity, category: CategoryEntity) throws {
         vault.mainIncomeCategory = category
         
         try save()
     }
     
-    public func clearMainIncome(_ vault: Vault) throws {
+    public func clearMainIncome(_ vault: VaultEntity) throws {
         vault.mainIncomeCategory = nil
         
         try save()
@@ -144,7 +144,7 @@ public final class VaultRepository: CoreDataRepository {
     ///
     /// - Important: After deletion, the provided `Vault` instance should no longer be used, as it becomes invalid once removed from the context.
     public func delete(
-        _ vault: Vault
+        _ vault: VaultEntity
     ) throws {
         context.delete(vault)
         try save()
@@ -156,7 +156,7 @@ public final class VaultRepository: CoreDataRepository {
     ///
     /// - Important: After deletion, all information regarding any `Vault` instance should no longer be used, as it becomes invalid once removed from the context.
     public func deleteAll() throws {
-        let request: NSFetchRequest<Vault> = Vault.fetchRequest()
+        let request: NSFetchRequest<VaultEntity> = VaultEntity.fetchRequest()
         let vaults = try context.fetch(request)
         vaults.forEach(context.delete)
         try save()

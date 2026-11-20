@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="25249" systemVersion="25G229" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
-    <entity name="Category" representedClassName="Category" syncable="YES" codeGenerationType="class">
+    <entity name="Category" representedClassName="CategoryEntity" syncable="YES" codeGenerationType="class">
         <attribute name="archived" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="budgetRole" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="color" optional="YES" attributeType="String" defaultValueString=""/>
@@ -16,19 +16,19 @@
         <relationship name="scheduledOperations" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="ScheduledOperation" inverseName="category" inverseEntity="ScheduledOperation"/>
         <relationship name="vault" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Vault" inverseName="categories" inverseEntity="Vault"/>
     </entity>
-    <entity name="Dashboard" representedClassName="Dashboard" syncable="YES" codeGenerationType="class">
+    <entity name="Dashboard" representedClassName="DashboardEntity" syncable="YES" codeGenerationType="class">
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <relationship name="vault" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Vault" inverseName="dashboard" inverseEntity="Vault"/>
         <relationship name="widgets" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DashboardWidget" inverseName="dashboard" inverseEntity="DashboardWidget"/>
     </entity>
-    <entity name="DashboardWidget" representedClassName="DashboardWidget" syncable="YES" codeGenerationType="class">
+    <entity name="DashboardWidget" representedClassName="DashboardWidgetEntity" syncable="YES" codeGenerationType="class">
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="isVisible" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="sortOrder" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="type" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="dashboard" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Dashboard" inverseName="widgets" inverseEntity="Dashboard"/>
     </entity>
-    <entity name="Operation" representedClassName="Operation" syncable="YES" codeGenerationType="class">
+    <entity name="Operation" representedClassName="OperationEntity" syncable="YES" codeGenerationType="class">
         <attribute name="amount" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="amountDecimal" attributeType="Decimal" defaultValueString="0.0"/>
         <attribute name="createdAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
@@ -47,7 +47,7 @@
         <relationship name="scheduledOperation" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ScheduledOperation" inverseName="operations" inverseEntity="ScheduledOperation"/>
         <relationship name="vault" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Vault" inverseName="operations" inverseEntity="Vault"/>
     </entity>
-    <entity name="Reimbursement" representedClassName="Reimbursement" syncable="YES" codeGenerationType="class">
+    <entity name="Reimbursement" representedClassName="ReimbursementEntity" syncable="YES" codeGenerationType="class">
         <attribute name="amount" attributeType="Decimal" defaultValueString="0.0"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="notes" optional="YES" attributeType="String"/>
@@ -59,7 +59,7 @@
         <relationship name="originalOperation" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Operation" inverseName="reimbursements" inverseEntity="Operation"/>
         <relationship name="sourceVault" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Vault" inverseName="sourceReimbursements" inverseEntity="Vault"/>
     </entity>
-    <entity name="ScheduledOperation" representedClassName="ScheduledOperation" syncable="YES" codeGenerationType="class">
+    <entity name="ScheduledOperation" representedClassName="ScheduledOperationEntity" syncable="YES" codeGenerationType="class">
         <attribute name="amount" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="amountDecimal" attributeType="Decimal" defaultValueString="0.0"/>
         <attribute name="createdAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
@@ -76,12 +76,12 @@
         <relationship name="operations" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Operation" inverseName="scheduledOperation" inverseEntity="Operation"/>
         <relationship name="vault" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Vault" inverseName="scheduledOperations" inverseEntity="Vault"/>
     </entity>
-    <entity name="Settings" representedClassName="Settings" syncable="YES" codeGenerationType="class">
+    <entity name="Settings" representedClassName="SettingsEntity" syncable="YES" codeGenerationType="class">
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="lastOpened" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <relationship name="favoriteVault" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Vault" inverseName="favoritedBySettings" inverseEntity="Vault"/>
     </entity>
-    <entity name="Vault" representedClassName="Vault" syncable="YES" codeGenerationType="class">
+    <entity name="Vault" representedClassName="VaultEntity" syncable="YES" codeGenerationType="class">
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="initialAmountDecimal" attributeType="Decimal" defaultValueString="0.0"/>
         <attribute name="initialDeposit" optional="YES" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>

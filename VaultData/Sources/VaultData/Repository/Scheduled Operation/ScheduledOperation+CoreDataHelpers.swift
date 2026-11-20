@@ -8,7 +8,7 @@
 import CoreData
 import VaultDomain
 
-extension ScheduledOperation {
+extension ScheduledOperationEntity {
     
     /// The typed representation of the operation’s raw `type` value.
     ///

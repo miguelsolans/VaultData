@@ -33,16 +33,16 @@ public final class ReimbursementRepository: CoreDataRepository {
     @discardableResult
     public func add(
         amount: Decimal,
-        operation: Operation,
-        sourceVault: Vault,
-        destinationVault: Vault,
+        operation: OperationEntity,
+        sourceVault: VaultEntity,
+        destinationVault: VaultEntity,
         status: ReimbursementStatus,
         date: Date? = nil,
         title: String? = nil,
-        category: Category
-    ) throws -> Reimbursement {
+        category: CategoryEntity
+    ) throws -> ReimbursementEntity {
 
-        let reimbursement = Reimbursement(context: context)
+        let reimbursement = ReimbursementEntity(context: context)
 
         reimbursement.id = UUID()
         reimbursement.amount = NSDecimalNumber(decimal: amount)
@@ -58,8 +58,8 @@ public final class ReimbursementRepository: CoreDataRepository {
     }
 
     public func linkIncomeOperation(
-        _ incomeOperation: Operation,
-        to reimbursement: Reimbursement
+        _ incomeOperation: OperationEntity,
+        to reimbursement: ReimbursementEntity
     ) throws {
         reimbursement.incomeOperation = incomeOperation
         try save()
@@ -76,8 +76,8 @@ public final class ReimbursementRepository: CoreDataRepository {
     /// - Throws: An error if fetch fails
     public func get(
         by id: UUID
-    ) throws -> Reimbursement? {
-        let request: NSFetchRequest<Reimbursement> = Reimbursement.fetchRequest()
+    ) throws -> ReimbursementEntity? {
+        let request: NSFetchRequest<ReimbursementEntity> = ReimbursementEntity.fetchRequest()
         request.fetchLimit = 1
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
         return try fetchFirst(request)
@@ -91,13 +91,13 @@ public final class ReimbursementRepository: CoreDataRepository {
     ///
     /// - Throws: An error if fetch fails
     public func getAll(
-        for operation: Operation
-    ) throws -> [Reimbursement] {
-        let request: NSFetchRequest<Reimbursement> = Reimbursement.fetchRequest()
+        for operation: OperationEntity
+    ) throws -> [ReimbursementEntity] {
+        let request: NSFetchRequest<ReimbursementEntity> = ReimbursementEntity.fetchRequest()
         
         request.predicate = NSPredicate(
             format: "%K == %@",
-            #keyPath(Reimbursement.originalOperation),
+            #keyPath(ReimbursementEntity.originalOperation),
             operation
         )
 
@@ -111,12 +111,12 @@ public final class ReimbursementRepository: CoreDataRepository {
     /// - Returns: A list of reimbursements
     ///
     /// - Throws: An error if fetch fails
-    public func getAll(depositedIn vault: Vault) throws -> [Reimbursement] {
-        let request: NSFetchRequest<Reimbursement> = Reimbursement.fetchRequest()
+    public func getAll(depositedIn vault: VaultEntity) throws -> [ReimbursementEntity] {
+        let request: NSFetchRequest<ReimbursementEntity> = ReimbursementEntity.fetchRequest()
         
         request.predicate = NSPredicate(
             format: "%K == %@",
-            #keyPath(Reimbursement.destinationVault),
+            #keyPath(ReimbursementEntity.destinationVault),
             vault
         )
 
@@ -136,13 +136,13 @@ public final class ReimbursementRepository: CoreDataRepository {
     ///
     /// - Throws: An error if validation or persistence fails
     public func update(
-        _ reimbursement: Reimbursement,
+        _ reimbursement: ReimbursementEntity,
         newAmount: Decimal? = nil,
-        newDestinationVault: Vault? = nil,
+        newDestinationVault: VaultEntity? = nil,
         newStatus: ReimbursementStatus? = nil,
         newDate: Date?? = nil,
         newTitle: String? = nil,
-        newCategory: Category? = nil
+        newCategory: CategoryEntity? = nil
     ) throws {
         
         if let newAmount {
@@ -175,7 +175,7 @@ public final class ReimbursementRepository: CoreDataRepository {
     /// - Parameter reimbursement: The reimbursement to delete
     ///
     /// - Throws: An error if saving context fails
-    public func delete(_ reimbursement: Reimbursement) throws {
+    public func delete(_ reimbursement: ReimbursementEntity) throws {
         context.delete(reimbursement)
         try save()
     }
@@ -185,14 +185,14 @@ public final class ReimbursementRepository: CoreDataRepository {
     /// - Parameter operation: The parent operation
     ///
     /// - Throws: An error if saving context fails
-    public func deleteAll(for operation: Operation) throws {
+    public func deleteAll(for operation: OperationEntity) throws {
         let reimbursements = try getAll(for: operation)
         reimbursements.forEach(context.delete)
         try save()
     }
     
     public func deleteAll() throws {
-        let request: NSFetchRequest<Reimbursement> = Reimbursement.fetchRequest()
+        let request: NSFetchRequest<ReimbursementEntity> = ReimbursementEntity.fetchRequest()
         let reimbursements = try context.fetch(request)
         reimbursements.forEach(context.delete)
         try save()
@@ -203,13 +203,13 @@ public final class ReimbursementRepository: CoreDataRepository {
 extension ReimbursementRepository {
     
     public func total(
-        in vault: Vault,
+        in vault: VaultEntity,
         with status: ReimbursementStatus,
         sameVault: Bool,
         between startDate: Date? = nil,
         and endDate: Date? = nil
     ) throws -> Decimal {
-        let request: NSFetchRequest<NSFetchRequestResult> = Reimbursement.fetchRequest()
+        let request: NSFetchRequest<NSFetchRequestResult> = ReimbursementEntity.fetchRequest()
         
         let expression = NSExpressionDescription()
         
@@ -219,7 +219,7 @@ extension ReimbursementRepository {
             forFunction: ExpressionFunction.sum.rawValue,
             arguments: [
                 NSExpression(
-                    forKeyPath: #keyPath(Reimbursement.amount)
+                    forKeyPath: #keyPath(ReimbursementEntity.amount)
                 )
             ]
         )
@@ -231,7 +231,7 @@ extension ReimbursementRepository {
         predicates.append(
             NSPredicate(
                 format: "%K == %@",
-                #keyPath(Reimbursement.sourceVault),
+                #keyPath(ReimbursementEntity.sourceVault),
                 vault
             )
         )
@@ -240,7 +240,7 @@ extension ReimbursementRepository {
             predicates.append(
                 NSPredicate(
                     format: "%K == %@",
-                    #keyPath(Reimbursement.destinationVault),
+                    #keyPath(ReimbursementEntity.destinationVault),
                     vault
                 )
             )
@@ -250,7 +250,7 @@ extension ReimbursementRepository {
             predicates.append(
                 NSPredicate(
                     format: "%K != %@",
-                    #keyPath(Reimbursement.destinationVault),
+                    #keyPath(ReimbursementEntity.destinationVault),
                     vault
                 )
             )
@@ -259,7 +259,7 @@ extension ReimbursementRepository {
         predicates.append(
             NSPredicate(
                 format: "%K == %d",
-                #keyPath(Reimbursement.status),
+                #keyPath(ReimbursementEntity.status),
                 Int(status.rawValue)
             )
         )
@@ -268,7 +268,7 @@ extension ReimbursementRepository {
             predicates.append(
                 NSPredicate(
                     format: "%K >= %@",
-                    #keyPath(Reimbursement.originalOperation.date),
+                    #keyPath(ReimbursementEntity.originalOperation.date),
                     startDate as NSDate
                 )
             )
@@ -278,7 +278,7 @@ extension ReimbursementRepository {
             predicates.append(
                 NSPredicate(
                     format: "%K <= %@",
-                    #keyPath(Reimbursement.originalOperation.date),
+                    #keyPath(ReimbursementEntity.originalOperation.date),
                     endDate as NSDate
                 )
             )
@@ -296,9 +296,9 @@ extension ReimbursementRepository {
     }
     
     public func total(
-        for operation: Operation
+        for operation: OperationEntity
     ) throws -> Decimal? {
-        let request: NSFetchRequest<NSFetchRequestResult> = Reimbursement.fetchRequest()
+        let request: NSFetchRequest<NSFetchRequestResult> = ReimbursementEntity.fetchRequest()
         
         let expression = NSExpressionDescription()
         
@@ -308,7 +308,7 @@ extension ReimbursementRepository {
             forFunction: ExpressionFunction.sum.rawValue,
             arguments: [
                 NSExpression(
-                    forKeyPath: #keyPath(Reimbursement.amount)
+                    forKeyPath: #keyPath(ReimbursementEntity.amount)
                 )
             ]
         )
@@ -320,7 +320,7 @@ extension ReimbursementRepository {
         predicates.append(
             NSPredicate(
                 format: "%K == %@",
-                #keyPath(Reimbursement.originalOperation),
+                #keyPath(ReimbursementEntity.originalOperation),
                 operation
             )
         )
