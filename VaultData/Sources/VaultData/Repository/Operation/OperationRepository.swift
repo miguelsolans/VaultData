@@ -22,7 +22,7 @@ public final class OperationRepository: CoreDataRepository {
     ///
     /// - Parameters
     ///   - `title`: The chosen title for the operation
-    ///   - `subtitle`: The chosen subtitle for the operation
+    ///   - `notes`: The chosen subtitle for the operation
     ///   - `date`: The date when the operation took place
     ///   - `type`: The type of the operation
     ///   - `amount`: The amount ot the operation
@@ -36,7 +36,7 @@ public final class OperationRepository: CoreDataRepository {
     @discardableResult
     public func add(
         title: String,
-        notes: String? = nil,
+        notes: String = "",
         date: Date,
         type: OperationType,
         amount: Decimal,
