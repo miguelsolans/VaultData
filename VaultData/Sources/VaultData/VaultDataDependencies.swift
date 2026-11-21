@@ -30,7 +30,9 @@ public final class VaultDataDependencies {
     public let scheduledOperationRepository: ScheduledOperationRepository
     
     public let settingsRepository: SettingsRepository
-    
+
+    public let dataResetRepository: DataResetRepository
+
     public let storeKitRepository: StoreKitRepository
     
     public init(configuration: PersistenceConfiguration) {
@@ -55,7 +57,9 @@ public final class VaultDataDependencies {
         self.scheduledOperationRepository = ScheduledOperationRepository(context: context)
         
         self.settingsRepository = SettingsRepository(context: context)
-        
+
+        self.dataResetRepository = DataResetRepository(context: context)
+
         self.storeKitRepository = StoreKitRepository()
     }
 }
