@@ -35,11 +35,15 @@ public final class VaultDataDependencies {
 
     public let storeKitRepository: StoreKitRepository
     
-    public init(configuration: PersistenceConfiguration) {
-        self.persistence = PersistenceController(configuration: configuration)
-        
-        self.persistenceNotifications = PersistenceChangeNotifier(persistenceContainer: persistence)
-        
+    public init(configuration: PersistenceConfiguration) async throws {
+        let persistence = try PersistenceController(configuration: configuration)
+        let persistenceNotifications = PersistenceChangeNotifier(persistenceContainer: persistence)
+        try await persistence.loadPersistentStores()
+        persistenceNotifications.storeDidLoad()
+
+        self.persistence = persistence
+        self.persistenceNotifications = persistenceNotifications
+
         let context = persistence.viewContext
         
         self.vaultRepository = VaultRepository(context: context)

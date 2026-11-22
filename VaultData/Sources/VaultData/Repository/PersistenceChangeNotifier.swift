@@ -1,31 +1,32 @@
 //
 //  PersistenceChangeNotifier.swift
-//  VaultCore
+//  VaultData
 //
 //  Created by Miguel Solans on 02/08/2026.
 //
 
+import CloudKit
 import CoreData
+import Foundation
 import VaultDomain
 
-public final class PersistenceChangeNotifier {
-
+public final class PersistenceChangeNotifier: PersistenceChangeObserving {
     private let notificationCenter: NotificationCenter
+    private let persistenceController: PersistenceController
+    private let lock = NSLock()
 
-    /// Number of currently running import operations.
-    private var activeImports = 0
-
-    /// Debounce timer.
-    private var idleTask: Task<Void, Never>?
-
-    /// Prevents posting syncDidBecomeIdle more than once.
-    private var hasBecomeIdle = false
+    private var observers: [ObjectIdentifier: WeakPersistenceChangeObserver] = [:]
+    private var currentState: PersistenceSyncState = .storeLoading
+    private var activeImportIDs: Set<UUID> = []
+    private var hasResolvedInitialImport = false
+    private var currentImportBatchFailed = false
 
     init(
         persistenceContainer: PersistenceController,
         notificationCenter: NotificationCenter = .default
     ) {
         self.notificationCenter = notificationCenter
+        self.persistenceController = persistenceContainer
 
         notificationCenter.addObserver(
             self,
@@ -42,148 +43,215 @@ public final class PersistenceChangeNotifier {
         )
     }
 
+    public var syncState: PersistenceSyncState {
+        withLock { currentState }
+    }
+
     public func addObserver(
-        _ observer: AnyObject,
-        selector: Selector,
-        name: Notification.Name
+        _ observer: PersistenceChangeObserver,
+        replayCurrentState: Bool = true
     ) {
-        notificationCenter.addObserver(
-            observer,
-            selector: selector,
-            name: name,
-            object: nil
-        )
+        withLock {
+            observers[ObjectIdentifier(observer)] = WeakPersistenceChangeObserver(observer)
+        }
+
+        guard replayCurrentState else { return }
+
+        DispatchQueue.main.async { [weak self, weak observer] in
+            guard let self, let observer, self.isRegistered(observer) else { return }
+            observer.persistenceChangeDidOccur(.syncStateChanged(self.syncState))
+        }
     }
 
-    public func removeObserver(_ observer: AnyObject) {
-        notificationCenter.removeObserver(observer)
+    public func removeObserver(_ observer: PersistenceChangeObserver) {
+        _ = withLock {
+            observers.removeValue(forKey: ObjectIdentifier(observer))
+        }
     }
 
-    // MARK: - Remote Changes
+    func storeDidLoad() {
+        let shouldPublish = withLock { () -> Bool in
+            guard currentState == .storeLoading else { return false }
+            currentState = .storeLoaded
+            return true
+        }
+
+        if shouldPublish {
+            publish(.syncStateChanged(.storeLoaded))
+        }
+    }
+
+    public func checkCloudKitAccount() async -> CloudKitAccountAvailability {
+        setSyncState(.checkingAccount, unlessInitialImportResolved: true)
+
+        let availability: CloudKitAccountAvailability
+
+        do {
+            availability = Self.availability(
+                for: try await CKContainer(
+                    identifier: persistenceController.cloudKitContainerIdentifier
+                ).accountStatus()
+            )
+        } catch {
+            availability = .couldNotDetermine
+        }
+
+        let stateToPublish = withLock { () -> PersistenceSyncState? in
+            guard !hasResolvedInitialImport else { return nil }
+
+            let state: PersistenceSyncState
+            if availability == .available {
+                state = activeImportIDs.isEmpty ? .waitingForImport : .importInProgress
+            } else {
+                state = .accountUnavailable(availability)
+            }
+
+            currentState = state
+            return state
+        }
+
+        if let stateToPublish {
+            publish(.syncStateChanged(stateToPublish))
+        }
+
+        return availability
+    }
+
+    public func retryCloudKitSyncCheck() async -> CloudKitAccountAvailability {
+        withLock {
+            if currentState != .importSucceeded && activeImportIDs.isEmpty {
+                hasResolvedInitialImport = false
+                currentImportBatchFailed = false
+            }
+        }
+
+        return await checkCloudKitAccount()
+    }
 
     @objc
     private func storeDidChange(_ notification: Notification) {
-
-        notificationCenter.post(
-            name: .dataChanged,
-            object: nil
-        )
-
-        // Ignore while CloudKit is still importing.
-        guard activeImports == 0 else {
-            return
-        }
-
-        scheduleIdleCheck()
+        publish(.dataChanged)
     }
-
-    // MARK: - CloudKit Events
 
     @objc
     private func cloudKitEventChanged(_ notification: Notification) {
-
         guard let event = notification.userInfo?[
             NSPersistentCloudKitContainer.eventNotificationUserInfoKey
         ] as? NSPersistentCloudKitContainer.Event else {
             return
         }
 
-        print("PersistenceChangeNotifier | \(event)")
+        guard event.type == .import else { return }
 
-        switch event.type {
-
-        case .import:
-
+        let state = withLock { () -> PersistenceSyncState in
             if event.endDate == nil {
+                if activeImportIDs.isEmpty {
+                    currentImportBatchFailed = false
+                }
 
-                // Import started.
-                activeImports += 1
-
-                idleTask?.cancel()
-
-                print("PersistenceChangeNotifier | Import started (\(activeImports))")
-
-                return
+                activeImportIDs.insert(event.identifier as UUID)
+                currentState = .importInProgress
+                return currentState
             }
 
-            // Import finished.
-            activeImports = max(0, activeImports - 1)
+            activeImportIDs.remove(event.identifier as UUID)
+            currentImportBatchFailed = currentImportBatchFailed || !event.succeeded
 
-            if event.succeeded {
-                notificationCenter.post(name: .importSuccessful, object: nil)
-                print("PersistenceChangeNotifier | Import successful")
-            } else {
-                notificationCenter.post(name: .importError, object: nil)
-                print("PersistenceChangeNotifier | Import failed: \(event.error?.localizedDescription ?? "Unknown error")")
+            guard activeImportIDs.isEmpty else {
+                currentState = .importInProgress
+                return currentState
             }
 
-            if activeImports == 0 {
-                scheduleIdleCheck()
+            hasResolvedInitialImport = true
+            currentState = currentImportBatchFailed ? .importFailed : .importSucceeded
+            return currentState
+        }
+
+        if !event.succeeded {
+            print("PersistenceChangeNotifier | Import failed: \(event.error?.localizedDescription ?? "Unknown error")")
+        }
+
+        publish(.syncStateChanged(state))
+    }
+
+    private func setSyncState(
+        _ state: PersistenceSyncState,
+        unlessInitialImportResolved: Bool
+    ) {
+        let stateToPublish = withLock { () -> PersistenceSyncState? in
+            if unlessInitialImportResolved && hasResolvedInitialImport {
+                return nil
             }
 
-        case .export:
+            currentState = state
+            return state
+        }
 
-            guard event.endDate != nil else {
-                return
-            }
-
-            if event.succeeded {
-                notificationCenter.post(name: .exportSuccessful, object: nil)
-                print("PersistenceChangeNotifier | Export successful")
-            } else {
-                notificationCenter.post(name: .exportError, object: nil)
-                print("PersistenceChangeNotifier | Export failed: \(event.error?.localizedDescription ?? "Unknown error")")
-            }
-
-        default:
-            break
+        if let stateToPublish {
+            publish(.syncStateChanged(stateToPublish))
         }
     }
 
-    // MARK: - Idle Detection
-
-    private func scheduleIdleCheck() {
-
-        guard !hasBecomeIdle else {
-            return
+    private func publish(_ change: PersistenceChange) {
+        let activeObservers = withLock {
+            observers = observers.filter { $0.value.observer != nil }
+            return observers.values.compactMap(\.observer)
         }
 
-        idleTask?.cancel()
-
-        idleTask = Task { [weak self] in
-
-            do {
-                try await Task.sleep(for: .seconds(1))
-                try Task.checkCancellation()
-            } catch {
-                return
-            }
-
+        DispatchQueue.main.async { [weak self] in
             guard let self else { return }
 
-            guard self.activeImports == 0 else {
-                return
+            let changeToDeliver: PersistenceChange
+            if case .syncStateChanged = change {
+                changeToDeliver = .syncStateChanged(self.syncState)
+            } else {
+                changeToDeliver = change
             }
 
-            guard !self.hasBecomeIdle else {
-                return
-            }
+            activeObservers
+                .filter { self.isRegistered($0) }
+                .forEach { $0.persistenceChangeDidOccur(changeToDeliver) }
+        }
+    }
 
-            self.hasBecomeIdle = true
+    private func isRegistered(_ observer: PersistenceChangeObserver) -> Bool {
+        withLock {
+            observers[ObjectIdentifier(observer)]?.observer === observer
+        }
+    }
 
-            print("PersistenceChangeNotifier | Sync became idle")
+    private func withLock<T>(_ body: () -> T) -> T {
+        lock.lock()
+        defer { lock.unlock() }
+        return body()
+    }
 
-            self.notificationCenter.post(
-                name: .syncDidBecomeIdle,
-                object: nil
-            )
+    private static func availability(for status: CKAccountStatus) -> CloudKitAccountAvailability {
+        switch status {
+        case .available:
+            return .available
+        case .noAccount:
+            return .noAccount
+        case .restricted:
+            return .restricted
+        case .temporarilyUnavailable:
+            return .temporarilyUnavailable
+        case .couldNotDetermine:
+            return .couldNotDetermine
+        @unknown default:
+            return .couldNotDetermine
         }
     }
 
     deinit {
-
-        idleTask?.cancel()
-
         notificationCenter.removeObserver(self)
+    }
+}
+
+private final class WeakPersistenceChangeObserver {
+    weak var observer: PersistenceChangeObserver?
+
+    init(_ observer: PersistenceChangeObserver) {
+        self.observer = observer
     }
 }
