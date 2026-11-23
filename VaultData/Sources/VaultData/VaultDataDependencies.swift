@@ -30,14 +30,20 @@ public final class VaultDataDependencies {
     public let scheduledOperationRepository: ScheduledOperationRepository
     
     public let settingsRepository: SettingsRepository
-    
+
+    public let dataResetRepository: DataResetRepository
+
     public let storeKitRepository: StoreKitRepository
     
-    public init(configuration: PersistenceConfiguration) {
-        self.persistence = PersistenceController(configuration: configuration)
-        
-        self.persistenceNotifications = PersistenceChangeNotifier(persistenceContainer: persistence)
-        
+    public init(configuration: PersistenceConfiguration) async throws {
+        let persistence = try PersistenceController(configuration: configuration)
+        let persistenceNotifications = PersistenceChangeNotifier(persistenceContainer: persistence)
+        try await persistence.loadPersistentStores()
+        persistenceNotifications.storeDidLoad()
+
+        self.persistence = persistence
+        self.persistenceNotifications = persistenceNotifications
+
         let context = persistence.viewContext
         
         self.vaultRepository = VaultRepository(context: context)
@@ -55,7 +61,9 @@ public final class VaultDataDependencies {
         self.scheduledOperationRepository = ScheduledOperationRepository(context: context)
         
         self.settingsRepository = SettingsRepository(context: context)
-        
+
+        self.dataResetRepository = DataResetRepository(context: context)
+
         self.storeKitRepository = StoreKitRepository()
     }
 }

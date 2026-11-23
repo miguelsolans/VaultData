@@ -44,6 +44,8 @@ struct PersistenceController {
     
     /// The Core Data persistent container.
     let container: NSPersistentCloudKitContainer
+
+    let cloudKitContainerIdentifier: String
     
     // Initializes the persistence controller.
     ///
@@ -52,27 +54,26 @@ struct PersistenceController {
     ///               Useful for testing and previews.
     ///   - containerName: The name of the Core Data model.
     ///
-    /// - Important: If the persistent store fails to load, the application will crash
-    ///   using `fatalError`, as this is considered a non-recoverable setup failure.
-    public init(
+    /// - Throws: An error if the model or persistent store description cannot be loaded.
+    init(
         configuration: PersistenceConfiguration,
         inMemory: Bool = false
-    ) {
+    ) throws {
         guard
             let modelURL = Bundle.module.url(forResource: configuration.modelName, withExtension: "momd")
                 ?? Bundle.module.url(forResource: configuration.modelName, withExtension: "mom"),
             let model = NSManagedObjectModel(contentsOf: modelURL)
         else {
-            fatalError("Missing Core Data model named \(configuration.modelName) in VaultCore resources")
+            throw PersistenceControllerError.modelNotFound(configuration.modelName)
         }
         
-        container = NSPersistentCloudKitContainer(
+        let container = NSPersistentCloudKitContainer(
             name: configuration.modelName,
             managedObjectModel: model
         )
         
         guard let description = container.persistentStoreDescriptions.first else {
-            fatalError("Missing persistent store description")
+            throw PersistenceControllerError.missingStoreDescription
         }
         
         description.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(
@@ -93,25 +94,37 @@ struct PersistenceController {
         description.shouldInferMappingModelAutomatically = true
         
         if inMemory {
-            container.persistentStoreDescriptions.first?.url = URL(fileURLWithPath: "/dev/null")
-        }
-        
-        var loadError: Error?
-        container.loadPersistentStores { description, error in
-            if let error {
-                loadError = error
-                return
-            }
-            
-#if DEBUG
-            if let url = description.url {
-                print("Core Data store:", url.path)
-            }
-#endif
+            description.url = URL(fileURLWithPath: "/dev/null")
         }
 
-        if let loadError {
-            fatalError("Failed to load Core Data: \(loadError)")
+        self.container = container
+        self.cloudKitContainerIdentifier = configuration.cloudKitContainerIdentifier
+    }
+
+    func loadPersistentStores() async throws {
+        let storeCount = container.persistentStoreDescriptions.count
+
+        guard storeCount > 0 else {
+            throw PersistenceControllerError.missingStoreDescription
+        }
+
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            let tracker = PersistentStoreLoadTracker(
+                expectedStoreCount: storeCount,
+                continuation: continuation
+            )
+
+            container.loadPersistentStores { description, error in
+#if DEBUG
+                if error == nil, let url = description.url {
+                    print("Core Data store:", url.path)
+                }
+#endif
+
+                Task {
+                    await tracker.record(error: error)
+                }
+            }
         }
         
 #if DEBUG
@@ -150,6 +163,56 @@ struct PersistenceController {
     /// - Throws: An error if the save operation fails.
     func saveViewContext() throws {
         try viewContext.saveIfNeeded()
+    }
+}
+
+private actor PersistentStoreLoadTracker {
+    private let expectedStoreCount: Int
+    private var loadedStoreCount = 0
+    private var firstError: Error?
+    private var continuation: CheckedContinuation<Void, Error>?
+
+    init(
+        expectedStoreCount: Int,
+        continuation: CheckedContinuation<Void, Error>
+    ) {
+        self.expectedStoreCount = expectedStoreCount
+        self.continuation = continuation
+    }
+
+    func record(error: Error?) {
+        if firstError == nil {
+            firstError = error
+        }
+
+        loadedStoreCount += 1
+
+        guard loadedStoreCount == expectedStoreCount,
+              let continuation else {
+            return
+        }
+
+        self.continuation = nil
+
+        if let firstError {
+            continuation.resume(throwing: firstError)
+        } else {
+            continuation.resume()
+        }
+    }
+}
+
+enum PersistenceControllerError: LocalizedError {
+    case modelNotFound(String)
+    case missingStoreDescription
+
+    var errorDescription: String? {
+        switch self {
+        case .modelNotFound(let modelName):
+            return "Missing Core Data model named \(modelName)."
+        case .missingStoreDescription:
+            return "Missing persistent store description."
+        }
     }
 }
 
